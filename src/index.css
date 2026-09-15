@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --espresso: #2f1d16;
+    --coffee: #513326;
+    --clay: #8a5a41;
+    --tan: #c69470;
+    --cream: #fffaf4;
+    --paper: #fffdf9;
+    --wash: #f1e1d1;
+    --line: #dfc7b2;
+    --ink: #2f1d16;
+    --muted: #684f43;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--cream);
+    color: var(--ink);
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.font-serif {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Academic subtle grid pattern */
+.academic-grid {
+  background-image: 
+    linear-gradient(rgba(223, 199, 178, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(223, 199, 178, 0.2) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.hero-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fffaf4;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c69470;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8a5a41;
+}
+
+/* Responsive Table styling */
+.policy-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.policy-table th {
+  background: #513326;
+  color: #fffaf4;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.policy-table td {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid #dfc7b2;
+  color: #513326;
+  vertical-align: top;
+  font-size: 0.9rem;
+}
+
+.policy-table tr:nth-child(even) td {
+  background: #fdf6ee;
+}
