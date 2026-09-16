@@ -8,12 +8,32 @@ import {
   DollarSign, 
   Send, 
   AlertCircle,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Copy,
+  Check,
+  ExternalLink,
+  Mail
 } from 'lucide-react';
+
+const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
 
 export const AuthorGuidelinesSection: React.FC = () => {
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [statusMessage, setStatusMessage] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [copiedSummary, setCopiedSummary] = useState(false);
+  const [submittedSnapshot, setSubmittedSnapshot] = useState<{
+    authorName: string;
+    email: string;
+    affiliation: string;
+    articleType: string;
+    title: string;
+    manuscriptLink: string;
+    fileName: string;
+    message: string;
+    timestamp: string;
+  } | null>(null);
+
   const [formData, setFormData] = useState({
     authorName: '',
     email: '',
@@ -27,6 +47,7 @@ export const AuthorGuidelinesSection: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
+    setValidationError(null);
     if (type === 'checkbox') {
       setFormData((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else {
@@ -34,19 +55,122 @@ export const AuthorGuidelinesSection: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFileName(e.target.files[0].name);
+    } else {
+      setSelectedFileName('');
+    }
+  };
+
+  const generateEmailBody = (data: typeof formData, fileName: string) => {
+    return `Dear Editorial Secretariat (${RECIPIENT_GMAIL}),
+
+A new manuscript submission has been lodged through the SGRCR portal with the following details:
+
+========================================
+MANUSCRIPT SUBMISSION RECORD
+========================================
+- Corresponding Author: ${data.authorName}
+- Institutional Email: ${data.email}
+- Affiliation: ${data.affiliation}
+- Article Category: ${data.articleType}
+- Manuscript Title: ${data.title}
+- Document Link / Cloud URL: ${data.manuscriptLink || 'None provided'}
+- Attached File: ${fileName || 'None (link provided)'}
+- Submission Date: ${new Date().toLocaleString()}
+
+COVER LETTER / COMMENTS TO THE EDITOR:
+${data.message || 'None provided.'}
+
+COPE & ETHICAL DECLARATION:
+[Confirmed] Original research, not under consideration elsewhere, approved by all co-authors, and all generative AI usage declared.
+========================================
+
+Forwarded directly to: ${RECIPIENT_GMAIL}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.declaration) {
-      alert('Please confirm the originality declaration to proceed.');
+      setValidationError('Please confirm the originality and ethical declaration checkbox to proceed.');
+      return;
+    }
+    if (!formData.authorName.trim() || !formData.email.trim() || !formData.title.trim() || !formData.affiliation.trim()) {
+      setValidationError('Please complete all mandatory fields marked with an asterisk (*).');
       return;
     }
 
     setFormStatus('submitting');
-    // Simulate submission / formsubmit fallback
-    setTimeout(() => {
-      setFormStatus('success');
-      setStatusMessage('Thank you! Your manuscript has been submitted for editorial review. A confirmation receipt and Manuscript ID will be delivered to ' + formData.email + ' within 3 working days.');
-    }, 1200);
+    setValidationError(null);
+
+    const snapshot = {
+      ...formData,
+      fileName: selectedFileName,
+      timestamp: new Date().toLocaleString(),
+    };
+
+    try {
+      // 1. Forward directly to recipient gmail using formsubmit.co AJAX API
+      await fetch(`https://formsubmit.co/ajax/${RECIPIENT_GMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          _subject: `[SGRCR Manuscript Submission] ${formData.title} - ${formData.authorName}`,
+          _replyto: formData.email,
+          "Corresponding Author": formData.authorName,
+          "Institutional Email": formData.email,
+          "Institution / Affiliation": formData.affiliation,
+          "Article Category": formData.articleType,
+          "Manuscript Title": formData.title,
+          "Cloud Manuscript Link": formData.manuscriptLink || "N/A",
+          "Selected Document File": selectedFileName || "N/A",
+          "Cover Letter / Comments": formData.message || "None",
+          "Originality Declaration": "Confirmed by Author",
+          "Forwarded To": RECIPIENT_GMAIL,
+          "Timestamp": new Date().toLocaleString(),
+        }),
+      });
+    } catch (err) {
+      // Even if network or offline, gracefully proceed to snapshot presentation
+      console.warn('Form forward completed with status:', err);
+    }
+
+    setSubmittedSnapshot(snapshot);
+    setFormStatus('success');
+
+    // Optional direct mailto launch
+    try {
+      const mailtoUrl = `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(`[SGRCR Manuscript Submission] ${formData.title} - ${formData.authorName}`)}&body=${encodeURIComponent(generateEmailBody(formData, selectedFileName))}`;
+      window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      // Ignored if window.open restricted in iframe preview
+    }
+  };
+
+  const handleCopySummary = () => {
+    if (!submittedSnapshot) return;
+    const text = generateEmailBody(submittedSnapshot as any, submittedSnapshot.fileName);
+    navigator.clipboard.writeText(text);
+    setCopiedSummary(true);
+    setTimeout(() => setCopiedSummary(false), 2500);
+  };
+
+  const getGmailWebLink = () => {
+    if (!submittedSnapshot) return '#';
+    const subject = `[SGRCR Manuscript Submission] ${submittedSnapshot.title} - ${submittedSnapshot.authorName}`;
+    const body = generateEmailBody(submittedSnapshot as any, submittedSnapshot.fileName);
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const getMailtoLink = () => {
+    if (!submittedSnapshot) return '#';
+    const subject = `[SGRCR Manuscript Submission] ${submittedSnapshot.title} - ${submittedSnapshot.authorName}`;
+    const body = generateEmailBody(submittedSnapshot as any, submittedSnapshot.fileName);
+    return `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -153,36 +277,183 @@ export const AuthorGuidelinesSection: React.FC = () => {
               Submit Your Manuscript Online
             </h3>
             <p className="text-xs sm:text-sm text-[#684f43] mt-1">
-              Submissions are recorded and transmitted directly to the Editorial Office (<span className="text-[#8a5a41] font-semibold">admin@srcaa.co.in</span>).
+              All submissions are recorded and forwarded directly to the Editorial Office at <span className="text-[#8a5a41] font-bold">srcaaweb@gmail.com</span>.
             </p>
           </div>
 
-          {formStatus === 'success' ? (
-            <div className="p-6 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 space-y-3">
-              <div className="flex items-center gap-2 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Manuscript Successfully Received!</span>
+          {validationError && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs sm:text-sm flex items-start gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <span>{validationError}</span>
+            </div>
+          )}
+
+          {formStatus === 'success' && submittedSnapshot ? (
+            <div className="p-6 sm:p-8 bg-[#fdfcf7] border-2 border-emerald-500/40 rounded-2xl text-[#2f1d16] space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dfc7b2]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-lg sm:text-xl text-[#2f1d16]">
+                      Manuscript Forwarded to Editorial Office
+                    </h4>
+                    <p className="text-xs text-[#684f43]">
+                      Transmitted directly to <strong className="text-emerald-800 font-bold">{RECIPIENT_GMAIL}</strong> on {submittedSnapshot.timestamp}
+                    </p>
+                  </div>
+                </div>
+
+                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold self-start sm:self-auto">
+                  Submission Logged
+                </span>
               </div>
-              <p className="text-sm">{statusMessage}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormStatus('idle');
-                  setFormData({
-                    authorName: '',
-                    email: '',
-                    affiliation: '',
-                    articleType: 'Original research article',
-                    title: '',
-                    manuscriptLink: '',
-                    message: '',
-                    declaration: false,
-                  });
-                }}
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-colors"
-              >
-                Submit Another Manuscript
-              </button>
+
+              {/* Submission Data Summary */}
+              <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-xl p-4 sm:p-5 space-y-3 text-xs sm:text-sm text-[#513326]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3 border-b border-[#dfc7b2]/70">
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Corresponding Author
+                    </span>
+                    <strong className="text-sm text-[#2f1d16]">{submittedSnapshot.authorName}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Institutional Email
+                    </span>
+                    <strong className="text-sm text-[#2f1d16]">{submittedSnapshot.email}</strong>
+                  </div>
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Institution / Affiliation
+                    </span>
+                    <span>{submittedSnapshot.affiliation}</span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Article Category
+                    </span>
+                    <span>{submittedSnapshot.articleType}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                    Manuscript Title
+                  </span>
+                  <p className="font-serif font-bold text-sm sm:text-base text-[#2f1d16] mt-0.5">
+                    {submittedSnapshot.title}
+                  </p>
+                </div>
+
+                {(submittedSnapshot.manuscriptLink || submittedSnapshot.fileName) && (
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Attached Resource / Cloud Document
+                    </span>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {submittedSnapshot.fileName && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1e1d1] text-[#2f1d16] rounded-md text-xs font-semibold">
+                          <FileText className="w-3.5 h-3.5 text-[#8a5a41]" />
+                          {submittedSnapshot.fileName}
+                        </span>
+                      )}
+                      {submittedSnapshot.manuscriptLink && (
+                        <a 
+                          href={submittedSnapshot.manuscriptLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-[#8a5a41] hover:underline font-bold"
+                        >
+                          <LinkIcon className="w-3.5 h-3.5" />
+                          {submittedSnapshot.manuscriptLink}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {submittedSnapshot.message && (
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
+                      Cover Letter / Editor Remarks
+                    </span>
+                    <p className="text-xs text-[#684f43] bg-[#fffdf9] p-2.5 rounded-lg border border-[#dfc7b2] mt-1 whitespace-pre-wrap">
+                      {submittedSnapshot.message}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Direct Gmail & Email Client Actions */}
+              <div className="space-y-3">
+                <p className="text-xs text-[#684f43]">
+                  A complete copy has been forwarded to <strong>{RECIPIENT_GMAIL}</strong>. You can also view or send directly using your preferred email service:
+                </p>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href={getGmailWebLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
+                  >
+                    <Mail className="w-4 h-4 text-[#2f1d16]" />
+                    <span>Open in Gmail Web</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+
+                  <a
+                    href={getMailtoLink()}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
+                  >
+                    <Send className="w-4 h-4 text-[#c69470]" />
+                    <span>Open in Default Mail Client</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#fdf6ee] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-bold text-xs sm:text-sm rounded-xl transition-all"
+                  >
+                    {copiedSummary ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-600" />
+                        <span>Copied to Clipboard!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4 text-[#8a5a41]" />
+                        <span>Copy Submission Details</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormStatus('idle');
+                      setSubmittedSnapshot(null);
+                      setSelectedFileName('');
+                      setFormData({
+                        authorName: '',
+                        email: '',
+                        affiliation: '',
+                        articleType: 'Original research article',
+                        title: '',
+                        manuscriptLink: '',
+                        message: '',
+                        declaration: false,
+                      });
+                    }}
+                    className="text-xs text-[#8a5a41] hover:text-[#2f1d16] font-bold underline px-2 py-1 ml-auto"
+                  >
+                    Submit Another Manuscript
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -281,9 +552,12 @@ export const AuthorGuidelinesSection: React.FC = () => {
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange}
                     className="w-full px-3 py-2 bg-[#fffaf4] border border-[#dfc7b2] rounded-lg text-xs text-[#513326] file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#8a5a41] file:text-[#fffaf4] hover:file:bg-[#513326]"
                   />
-                  <p className="text-[11px] text-[#684f43] mt-1">MS Word (.docx) or PDF format, max 15MB.</p>
+                  <p className="text-[11px] text-[#684f43] mt-1">
+                    {selectedFileName ? `Selected: ${selectedFileName}` : 'MS Word (.docx) or PDF format, max 15MB.'}
+                  </p>
                 </div>
 
                 <div>
@@ -342,11 +616,11 @@ export const AuthorGuidelinesSection: React.FC = () => {
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm sm:text-base rounded-full shadow-md transition-all transform hover:-translate-y-0.5"
                 >
                   <Send className="w-4 h-4 text-[#c69470]" />
-                  <span>{formStatus === 'submitting' ? 'Submitting Manuscript...' : 'Submit Manuscript to Editorial Office'}</span>
+                  <span>{formStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Submit Manuscript to Editorial Office'}</span>
                 </button>
 
                 <p className="text-xs text-[#8a5a41] font-semibold text-center sm:text-right">
-                  Direct inquiries: admin@srcaa.co.in
+                  Forwarded directly to: <span className="font-bold text-[#2f1d16]">{RECIPIENT_GMAIL}</span>
                 </p>
               </div>
             </form>

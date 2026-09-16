@@ -15,19 +15,27 @@ import {
 
 interface NavbarProps {
   onOpenArchives?: () => void;
+  onOpenArticleArchive?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArchive }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const handleArchivesClick = (e: React.MouseEvent) => {
-    // Open Archives & Publications directly in a separate browser tab
-    window.open('/archive.html', '_blank', 'noopener,noreferrer');
+    // Open Archives & Publications in a separate browser tab or switch view
+    try {
+      window.open('/archive.html', '_blank', 'noopener,noreferrer');
+    } catch {
+      // Ignored if window.open is restricted in iframe
+    }
     if (onOpenArchives) {
       onOpenArchives();
+    }
+    if (onOpenArticleArchive) {
+      onOpenArticleArchive();
     }
   };
 

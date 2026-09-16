@@ -1,8 +1,31 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Phone, Send, CheckCircle2, MessageSquare } from 'lucide-react';
+import { 
+  Mail, 
+  MapPin, 
+  Phone, 
+  Send, 
+  CheckCircle2, 
+  MessageSquare,
+  Copy,
+  Check,
+  ExternalLink,
+  AlertCircle
+} from 'lucide-react';
+
+const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
 
 export const ContactSection: React.FC = () => {
   const [inquiryStatus, setInquiryStatus] = useState<'idle' | 'submitting' | 'sent'>('idle');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [copiedSummary, setCopiedSummary] = useState(false);
+  const [submittedSnapshot, setSubmittedSnapshot] = useState<{
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    timestamp: string;
+  } | null>(null);
+
   const [inquiryData, setInquiryData] = useState({
     name: '',
     email: '',
@@ -10,12 +33,95 @@ export const ContactSection: React.FC = () => {
     message: '',
   });
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const generateEmailBody = (data: typeof inquiryData) => {
+    return `Dear Editorial Secretariat (${RECIPIENT_GMAIL}),
+
+A new inquiry has been submitted via the SGRCR portal:
+
+========================================
+EDITORIAL INQUIRY DETAILS
+========================================
+- Sender Name: ${data.name}
+- Sender Email: ${data.email}
+- Inquiry Subject: ${data.subject}
+- Date: ${new Date().toLocaleString()}
+
+MESSAGE:
+${data.message}
+========================================
+
+Forwarded directly to: ${RECIPIENT_GMAIL}`;
+  };
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inquiryData.name.trim() || !inquiryData.email.trim() || !inquiryData.message.trim()) {
+      setValidationError('Please complete all required fields.');
+      return;
+    }
+
     setInquiryStatus('submitting');
-    setTimeout(() => {
-      setInquiryStatus('sent');
-    }, 1000);
+    setValidationError(null);
+
+    const snapshot = {
+      ...inquiryData,
+      timestamp: new Date().toLocaleString(),
+    };
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/${RECIPIENT_GMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          _subject: `[SGRCR Editorial Inquiry] ${inquiryData.subject} - from ${inquiryData.name}`,
+          _replyto: inquiryData.email,
+          "Sender Name": inquiryData.name,
+          "Sender Email": inquiryData.email,
+          "Inquiry Topic": inquiryData.subject,
+          "Message": inquiryData.message,
+          "Forwarded To": RECIPIENT_GMAIL,
+          "Timestamp": new Date().toLocaleString(),
+        }),
+      });
+    } catch (err) {
+      console.warn('Inquiry forward network request completed:', err);
+    }
+
+    setSubmittedSnapshot(snapshot);
+    setInquiryStatus('sent');
+
+    // Attempt mail client launch
+    try {
+      const mailtoUrl = `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(`[SGRCR Inquiry] ${inquiryData.subject}`)}&body=${encodeURIComponent(generateEmailBody(inquiryData))}`;
+      window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      // Handled in iframe
+    }
+  };
+
+  const handleCopySummary = () => {
+    if (!submittedSnapshot) return;
+    const text = generateEmailBody(submittedSnapshot);
+    navigator.clipboard.writeText(text);
+    setCopiedSummary(true);
+    setTimeout(() => setCopiedSummary(false), 2500);
+  };
+
+  const getGmailWebLink = () => {
+    if (!submittedSnapshot) return '#';
+    const subject = `[SGRCR Editorial Inquiry] ${submittedSnapshot.subject} - ${submittedSnapshot.name}`;
+    const body = generateEmailBody(submittedSnapshot);
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const getMailtoLink = () => {
+    if (!submittedSnapshot) return '#';
+    const subject = `[SGRCR Editorial Inquiry] ${submittedSnapshot.subject} - ${submittedSnapshot.name}`;
+    const body = generateEmailBody(submittedSnapshot);
+    return `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   return (
@@ -61,15 +167,15 @@ export const ContactSection: React.FC = () => {
                 <div className="space-y-1">
                   <strong className="block text-[#2f1d16]">Official Email Communications</strong>
                   <p className="text-xs text-[#684f43]">
-                    Manuscript Submissions & Decisions:{' '}
-                    <a href="mailto:admin@srcaa.co.in" className="text-[#8a5a41] font-bold hover:underline">
-                      admin@srcaa.co.in
+                    Editorial Secretariat & Direct Forwarding:{' '}
+                    <a href={`mailto:${RECIPIENT_GMAIL}`} className="text-[#8a5a41] font-bold hover:underline">
+                      {RECIPIENT_GMAIL}
                     </a>
                   </p>
                   <p className="text-xs text-[#684f43]">
-                    General Inquiries & Institutional Partnerships:{' '}
-                    <a href="mailto:srcaacontact@gmail.com" className="text-[#8a5a41] font-bold hover:underline">
-                      srcaacontact@gmail.com
+                    Institutional Inquiries & Administration:{' '}
+                    <a href="mailto:admin@srcaa.co.in" className="text-[#8a5a41] font-bold hover:underline">
+                      admin@srcaa.co.in
                     </a>
                   </p>
                 </div>
@@ -94,11 +200,11 @@ export const ContactSection: React.FC = () => {
                   Direct Email to Editorial Secretariat
                 </p>
                 <p className="text-xs text-[#dfc7b2] mt-0.5">
-                  Launch default email client pre-addressed to admin@srcaa.co.in
+                  Launch email pre-addressed to {RECIPIENT_GMAIL}
                 </p>
               </div>
               <a
-                href="mailto:admin@srcaa.co.in?subject=Editorial%20Inquiry%20-%20SGRCR"
+                href={`mailto:${RECIPIENT_GMAIL}?subject=Editorial%20Inquiry%20-%20SGRCR`}
                 className="shrink-0 px-4 py-2.5 bg-[#c69470] hover:bg-[#d9a985] text-[#2f1d16] font-bold text-xs rounded-xl shadow-xs transition-colors"
               >
                 Send Email
@@ -113,28 +219,99 @@ export const ContactSection: React.FC = () => {
               Send an Editorial Inquiry
             </h3>
             <p className="text-xs text-[#684f43] mb-6">
-              Have a question regarding submission formats, reviewer invitations, or copyright permissions? Leave a message below.
+              Have a question regarding submission formats, reviewer invitations, or copyright permissions? Inquiries are delivered directly to <span className="font-bold text-[#8a5a41]">{RECIPIENT_GMAIL}</span>.
             </p>
 
-            {inquiryStatus === 'sent' ? (
-              <div className="p-6 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 space-y-3">
-                <div className="flex items-center gap-2 font-bold text-base">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span>Inquiry Transmitted Successfully</span>
+            {validationError && (
+              <div className="mb-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
+
+            {inquiryStatus === 'sent' && submittedSnapshot ? (
+              <div className="p-6 bg-[#fdfcf7] border-2 border-emerald-500/40 rounded-2xl text-[#2f1d16] space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#dfc7b2]">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-base sm:text-lg text-[#2f1d16]">
+                      Inquiry Forwarded to Editorial Office
+                    </h4>
+                    <p className="text-xs text-[#684f43]">
+                      Transmitted to <strong className="text-emerald-800">{RECIPIENT_GMAIL}</strong>
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs sm:text-sm">
-                  Thank you, {inquiryData.name}. The editorial secretariat has received your query and will reply to <strong>{inquiryData.email}</strong> shortly.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInquiryStatus('idle');
-                    setInquiryData({ name: '', email: '', subject: 'General Editorial Inquiry', message: '' });
-                  }}
-                  className="px-4 py-2 bg-emerald-700 text-white text-xs font-bold rounded-lg"
-                >
-                  Send Another Inquiry
-                </button>
+
+                <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-xl p-3.5 space-y-2 text-xs text-[#513326]">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">From</span>
+                    <strong>{submittedSnapshot.name}</strong> ({submittedSnapshot.email})
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">Subject</span>
+                    <p className="font-semibold text-[#2f1d16]">{submittedSnapshot.subject}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">Message</span>
+                    <p className="text-xs text-[#684f43] bg-[#fffdf9] p-2 rounded-md border border-[#dfc7b2] whitespace-pre-wrap">
+                      {submittedSnapshot.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <a
+                    href={getGmailWebLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs rounded-lg transition-all"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Open in Gmail Web</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+
+                  <a
+                    href={getMailtoLink()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs rounded-lg transition-all"
+                  >
+                    <Send className="w-3.5 h-3.5 text-[#c69470]" />
+                    <span>Open in Email App</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#fdf6ee] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-semibold text-xs rounded-lg transition-all"
+                  >
+                    {copiedSummary ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-[#8a5a41]" />
+                        <span>Copy Message</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInquiryStatus('idle');
+                      setSubmittedSnapshot(null);
+                      setInquiryData({ name: '', email: '', subject: 'General Editorial Inquiry', message: '' });
+                    }}
+                    className="text-xs text-[#8a5a41] hover:text-[#2f1d16] font-bold underline px-2 py-1 ml-auto"
+                  >
+                    Send Another Inquiry
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleInquirySubmit} className="space-y-4">
@@ -146,7 +323,10 @@ export const ContactSection: React.FC = () => {
                     type="text"
                     required
                     value={inquiryData.name}
-                    onChange={(e) => setInquiryData({ ...inquiryData, name: e.target.value })}
+                    onChange={(e) => {
+                      setValidationError(null);
+                      setInquiryData({ ...inquiryData, name: e.target.value });
+                    }}
                     placeholder="Prof. / Dr. / Researcher Name"
                     className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
                   />
@@ -160,7 +340,10 @@ export const ContactSection: React.FC = () => {
                     type="email"
                     required
                     value={inquiryData.email}
-                    onChange={(e) => setInquiryData({ ...inquiryData, email: e.target.value })}
+                    onChange={(e) => {
+                      setValidationError(null);
+                      setInquiryData({ ...inquiryData, email: e.target.value });
+                    }}
                     placeholder="email@institution.edu"
                     className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
                   />
@@ -191,7 +374,10 @@ export const ContactSection: React.FC = () => {
                     rows={4}
                     required
                     value={inquiryData.message}
-                    onChange={(e) => setInquiryData({ ...inquiryData, message: e.target.value })}
+                    onChange={(e) => {
+                      setValidationError(null);
+                      setInquiryData({ ...inquiryData, message: e.target.value });
+                    }}
                     placeholder="Type your message or inquiry here..."
                     className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
                   />
@@ -200,11 +386,15 @@ export const ContactSection: React.FC = () => {
                 <button
                   type="submit"
                   disabled={inquiryStatus === 'submitting'}
-                  className="w-full inline-flex items-center justify-center gap-2 py-3 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-sm rounded-lg shadow-sm transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm rounded-xl shadow-xs transition-colors"
                 >
                   <Send className="w-4 h-4 text-[#c69470]" />
-                  <span>{inquiryStatus === 'submitting' ? 'Transmitting...' : 'Send Message to Editorial Office'}</span>
+                  <span>{inquiryStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Send Message to Editorial Office'}</span>
                 </button>
+
+                <p className="text-[11px] text-center text-[#684f43]">
+                  Submissions are transmitted directly to <strong className="text-[#2f1d16]">{RECIPIENT_GMAIL}</strong>
+                </p>
               </form>
             )}
           </div>

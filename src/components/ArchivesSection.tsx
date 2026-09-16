@@ -15,7 +15,11 @@ import {
 import { ARTICLES } from '../data/journalData';
 import { Article } from '../types';
 
-export const ArchivesSection: React.FC = () => {
+interface ArchivesSectionProps {
+  onOpenArchives?: () => void;
+}
+
+export const ArchivesSection: React.FC<ArchivesSectionProps> = ({ onOpenArchives }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [expandedAbstractId, setExpandedAbstractId] = useState<string | null>(null);
 
@@ -27,8 +31,14 @@ export const ArchivesSection: React.FC = () => {
   };
 
   const handleOpenSeparateTab = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.open('/archive.html', '_blank', 'noopener,noreferrer');
+    try {
+      window.open('/archive.html', '_blank', 'noopener,noreferrer');
+    } catch {
+      // Ignored if window.open is restricted in iframe
+    }
+    if (onOpenArchives) {
+      onOpenArchives();
+    }
   };
 
   return (
