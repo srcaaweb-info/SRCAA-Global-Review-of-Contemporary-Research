@@ -149,12 +149,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
               Editorial Contact
             </h4>
             <div className="space-y-2 text-xs text-[#dfc7b2]">
-              <p>
-                <strong className="text-[#fffaf4] block">Form Dispatch Target:</strong>
-                <a href="mailto:srcaaweb@gmail.com" className="text-[#e6bd94] font-bold hover:underline">
-                  srcaaweb@gmail.com
-                </a>
-              </p>
+              
               <p>
                 <strong className="text-[#fffaf4] block">Manuscript Inquiries:</strong>
                 <a href="mailto:admin@srcaa.co.in" className="text-[#c69470] hover:underline">
@@ -196,7 +191,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
       <div className="border-t border-[#3d271e] bg-[#1a0f0b] py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#dfc7b2]">
           <p className="text-center sm:text-left">
-            © 2026 SRCAA — Shakti Research Centre and Academia. All rights reserved. Open-Access Academic Repository.
+            © 2026 SRCAA — Shakti Research Centre and Academia. All rights reserved.
           </p>
           <button
             type="button"
