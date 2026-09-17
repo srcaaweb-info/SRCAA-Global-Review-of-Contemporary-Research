@@ -1,7 +1,11 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Mail, ArrowUp, ExternalLink, Archive } from 'lucide-react';
+import { BookOpen, ShieldCheck, Mail, ArrowUp, ExternalLink, Archive, Inbox } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenSubmissionsLog?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -146,6 +150,12 @@ export const Footer: React.FC = () => {
             </h4>
             <div className="space-y-2 text-xs text-[#dfc7b2]">
               <p>
+                <strong className="text-[#fffaf4] block">Form Dispatch Target:</strong>
+                <a href="mailto:srcaaweb@gmail.com" className="text-[#e6bd94] font-bold hover:underline">
+                  srcaaweb@gmail.com
+                </a>
+              </p>
+              <p>
                 <strong className="text-[#fffaf4] block">Manuscript Inquiries:</strong>
                 <a href="mailto:admin@srcaa.co.in" className="text-[#c69470] hover:underline">
                   admin@srcaa.co.in
@@ -157,6 +167,20 @@ export const Footer: React.FC = () => {
                   srcaacontact@gmail.com
                 </a>
               </p>
+
+              {onOpenSubmissionsLog && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={onOpenSubmissionsLog}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2f1d16] hover:bg-[#513326] text-[#e6bd94] border border-[#8a5a41] rounded-lg text-xs font-bold transition-colors"
+                  >
+                    <Inbox className="w-3.5 h-3.5 text-[#c69470]" />
+                    <span>Editorial Submissions Log</span>
+                  </button>
+                </div>
+              )}
+
               <div className="pt-2 border-t border-[#3d271e] text-[11px] text-[#dfc7b2]">
                 <p>Open Access: CC BY 4.0</p>
                 <p>DOAJ & Scopus Indexation Framework</p>

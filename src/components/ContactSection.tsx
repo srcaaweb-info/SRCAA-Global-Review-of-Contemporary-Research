@@ -9,8 +9,14 @@ import {
   Copy,
   Check,
   ExternalLink,
-  AlertCircle
+  AlertCircle,
+  Info
 } from 'lucide-react';
+import { 
+  saveEditorialInquiry, 
+  getGoogleFormEndpoint, 
+  pushToGoogleEndpoint 
+} from '../utils/submissionStorage';
 
 const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
 
@@ -68,7 +74,18 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
       timestamp: new Date().toLocaleString(),
     };
 
+    // 1. Permanently save inquiry locally
+    const savedRecord = saveEditorialInquiry({
+      name: inquiryData.name,
+      email: inquiryData.email,
+      subject: inquiryData.subject,
+      message: inquiryData.message,
+      timestamp: snapshot.timestamp,
+      forwardStatus: 'forwarded',
+    });
+
     try {
+      // 2. Forward to recipient gmail using formsubmit.co AJAX API
       await fetch(`https://formsubmit.co/ajax/${RECIPIENT_GMAIL}`, {
         method: 'POST',
         headers: {
@@ -77,29 +94,39 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
         },
         body: JSON.stringify({
           _subject: `[SGRCR Editorial Inquiry] ${inquiryData.subject} - from ${inquiryData.name}`,
+          _captcha: 'false',
+          _template: 'table',
           _replyto: inquiryData.email,
           "Sender Name": inquiryData.name,
           "Sender Email": inquiryData.email,
           "Inquiry Topic": inquiryData.subject,
           "Message": inquiryData.message,
           "Forwarded To": RECIPIENT_GMAIL,
-          "Timestamp": new Date().toLocaleString(),
+          "Timestamp": snapshot.timestamp,
         }),
       });
     } catch (err) {
       console.warn('Inquiry forward network request completed:', err);
     }
 
+    // 3. Push to Google Form / Sheets API if configured
+    const googleEndpoint = getGoogleFormEndpoint();
+    if (googleEndpoint) {
+      pushToGoogleEndpoint(googleEndpoint, {
+        submissionId: savedRecord.id,
+        authorName: inquiryData.name,
+        email: inquiryData.email,
+        affiliation: 'Editorial Office Inquiry',
+        articleType: 'Inquiry',
+        title: inquiryData.subject,
+        message: inquiryData.message,
+        timestamp: snapshot.timestamp,
+        fileData: null,
+      }).catch(console.warn);
+    }
+
     setSubmittedSnapshot(snapshot);
     setInquiryStatus('sent');
-
-    // Attempt mail client launch
-    try {
-      const mailtoUrl = `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(`[SGRCR Inquiry] ${inquiryData.subject}`)}&body=${encodeURIComponent(generateEmailBody(inquiryData))}`;
-      window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
-    } catch {
-      // Handled in iframe
-    }
   };
 
   const handleCopySummary = () => {
@@ -262,15 +289,29 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                   </div>
                 </div>
 
+                {/* One-time FormSubmit Activation Notice */}
+                <div className="p-3 bg-amber-50/90 border border-amber-300 rounded-xl space-y-1 text-xs text-amber-900">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-950">
+                    <Info className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                    <span>Email Delivery Notice</span>
+                  </div>
+                  <p className="text-amber-800 text-[11px] leading-relaxed">
+                    Message was dispatched to <strong>{RECIPIENT_GMAIL}</strong>. If this is your first time using FormSubmit for {RECIPIENT_GMAIL}, please check your Gmail (Inbox/Spam) for an email from FormSubmit titled <em>"Action Required: Activate your form"</em> and click <strong>Activate Form</strong>.
+                  </p>
+                  <p className="text-amber-900 font-semibold text-[11px]">
+                    💡 Or click <strong>"Push via Gmail Now"</strong> below to send immediately with zero delay!
+                  </p>
+                </div>
+
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <a
                     href={getGmailWebLink()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs rounded-lg transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs rounded-lg transition-all shadow-sm"
                   >
                     <Mail className="w-3.5 h-3.5" />
-                    <span>Open in Gmail Web</span>
+                    <span>Push via Gmail Now</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
 
@@ -383,14 +424,27 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={inquiryStatus === 'submitting'}
-                  className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm rounded-xl shadow-xs transition-colors"
-                >
-                  <Send className="w-4 h-4 text-[#c69470]" />
-                  <span>{inquiryStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Send Message to Editorial Office'}</span>
-                </button>
+                <div className="space-y-2.5">
+                  <button
+                    type="submit"
+                    disabled={inquiryStatus === 'submitting'}
+                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm rounded-xl shadow-xs transition-colors"
+                  >
+                    <Send className="w-4 h-4 text-[#c69470]" />
+                    <span>{inquiryStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Send Message to Editorial Office'}</span>
+                  </button>
+
+                  <a
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(`[SGRCR Inquiry] ${inquiryData.subject || 'Editorial Inquiry'}`)}&body=${encodeURIComponent(generateEmailBody(inquiryData))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-colors"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Dispatch via Gmail Directly</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
 
                 <p className="text-[11px] text-center text-[#684f43]">
                   Submissions are transmitted directly to <strong className="text-[#2f1d16]">{RECIPIENT_GMAIL}</strong>

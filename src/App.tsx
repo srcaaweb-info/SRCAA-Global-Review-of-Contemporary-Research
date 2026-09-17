@@ -13,15 +13,20 @@ import { ArchivesSection } from './components/ArchivesSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { ArticleArchiveView } from './components/ArticleArchiveView';
+import { EditorialSubmissionsModal } from './components/EditorialSubmissionsModal';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'main' | 'archive'>('main');
+  const [isSubmissionsModalOpen, setIsSubmissionsModalOpen] = useState(false);
 
-  // Check URL params on initial load (e.g. ?view=archive or ?tab=archive)
+  // Check URL params on initial load (e.g. ?view=archive or ?tab=archive or ?modal=submissions)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'archive' || params.get('tab') === 'archive') {
       setCurrentView('archive');
+    }
+    if (params.get('modal') === 'submissions' || params.get('view') === 'submissions') {
+      setIsSubmissionsModalOpen(true);
     }
   }, []);
 
@@ -41,7 +46,10 @@ export default function App() {
       ) : (
         <div className="flex flex-col min-h-screen">
           <CookieBanner />
-          <Navbar onOpenArticleArchive={handleOpenArticleArchive} />
+          <Navbar 
+            onOpenArticleArchive={handleOpenArticleArchive} 
+            onOpenSubmissionsLog={() => setIsSubmissionsModalOpen(true)}
+          />
           <main className="flex-1">
             <Hero />
             <QuickNav />
@@ -54,7 +62,12 @@ export default function App() {
             <ArchivesSection onOpenArchives={handleOpenArticleArchive} />
             <ContactSection />
           </main>
-          <Footer />
+          <Footer onOpenSubmissionsLog={() => setIsSubmissionsModalOpen(true)} />
+
+          <EditorialSubmissionsModal 
+            isOpen={isSubmissionsModalOpen} 
+            onClose={() => setIsSubmissionsModalOpen(false)} 
+          />
         </div>
       )}
     </div>

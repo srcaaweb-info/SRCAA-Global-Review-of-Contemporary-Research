@@ -4,14 +4,18 @@ export interface EditorialMember {
   role: string;
   category: 'leadership' | 'chief_editor' | 'advisory' | 'member' | 'specialist';
   degrees?: string;
+  department?: string;
   affiliation: string;
   subAffiliation?: string;
   location: string;
   initials: string;
   avatarBg?: string;
   email?: string;
-  researchFocus?: string[];
+  phone?: string;
+  institutionalProfile?: string;
   orcid?: string;
+  additionalRoles?: string[];
+  researchFocus?: string[];
 }
 
 export interface Article {

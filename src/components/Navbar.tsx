@@ -10,15 +10,17 @@ import {
   Menu, 
   X, 
   ExternalLink,
-  Info
+  Info,
+  Inbox
 } from 'lucide-react';
 
 interface NavbarProps {
   onOpenArchives?: () => void;
   onOpenArticleArchive?: () => void;
+  onOpenSubmissionsLog?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArchive }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArchive, onOpenSubmissionsLog }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
@@ -119,8 +121,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArc
               Contact
             </a>
 
-            {/* Direct Separate Tab Action for Archives & Publications */}
-            <div className="pl-2 border-l border-[#dfc7b2] flex items-center">
+            {/* Submissions Log and Archives */}
+            <div className="pl-2 border-l border-[#dfc7b2] flex items-center gap-2">
+              {onOpenSubmissionsLog && (
+                <button
+                  type="button"
+                  onClick={onOpenSubmissionsLog}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf6ee] text-[#513326] hover:text-[#2f1d16] hover:bg-[#f1e1d1] text-xs xl:text-sm font-bold rounded-full shadow-xs transition-all border border-[#dfc7b2]"
+                  title="View received manuscript submissions and editorial inquiries"
+                >
+                  <Inbox className="w-3.5 h-3.5 text-[#8a5a41]" />
+                  <span>Submissions Log</span>
+                </button>
+              )}
+
               <a
                 href="/archive.html"
                 target="_blank"
@@ -272,6 +286,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArc
               <Mail className="w-4 h-4 text-[#8a5a41]" />
               Contact & Editorial Office
             </a>
+
+            {onOpenSubmissionsLog && (
+              <button
+                type="button"
+                onClick={() => {
+                  closeMobileMenu();
+                  onOpenSubmissionsLog();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-semibold text-[#513326] hover:bg-[#f1e1d1] active:bg-[#dfc7b2] text-left"
+              >
+                <Inbox className="w-4 h-4 text-[#8a5a41]" />
+                Editorial Submissions Log
+              </button>
+            )}
           </div>
 
           <div className="pt-3 border-t border-[#dfc7b2] flex flex-col gap-2">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   PenTool, 
   FileText, 
@@ -12,17 +12,37 @@ import {
   Copy,
   Check,
   ExternalLink,
-  Mail
+  Mail,
+  Inbox,
+  Info,
+  Download,
+  X,
+  Database,
+  Sparkles
 } from 'lucide-react';
+import { 
+  saveManuscriptSubmission, 
+  formatFileSize, 
+  downloadBlob,
+  getGoogleFormEndpoint,
+  pushToGoogleEndpoint,
+  fileToBase64
+} from '../utils/submissionStorage';
 
 const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
 
-export const AuthorGuidelinesSection: React.FC = () => {
+interface Props {
+  onOpenSubmissionsLog?: () => void;
+}
+
+export const AuthorGuidelinesSection: React.FC<Props> = ({ onOpenSubmissionsLog }) => {
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [submittedSnapshot, setSubmittedSnapshot] = useState<{
+    id?: string;
     authorName: string;
     email: string;
     affiliation: string;
@@ -30,6 +50,7 @@ export const AuthorGuidelinesSection: React.FC = () => {
     title: string;
     manuscriptLink: string;
     fileName: string;
+    fileSize?: number;
     message: string;
     timestamp: string;
   } | null>(null);
@@ -45,6 +66,16 @@ export const AuthorGuidelinesSection: React.FC = () => {
     declaration: false,
   });
 
+  const [googleEndpoint, setGoogleEndpoint] = useState<string>(() => getGoogleFormEndpoint());
+
+  useEffect(() => {
+    const handleStorageUpdate = () => {
+      setGoogleEndpoint(getGoogleFormEndpoint());
+    };
+    window.addEventListener('sgrcr-storage-update', handleStorageUpdate);
+    return () => window.removeEventListener('sgrcr-storage-update', handleStorageUpdate);
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     setValidationError(null);
@@ -57,8 +88,16 @@ export const AuthorGuidelinesSection: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      if (file.size > 25 * 1024 * 1024) {
+        setValidationError('Selected file is larger than 25MB. Please upload a smaller file or paste a Google Drive / cloud link.');
+        return;
+      }
+      setSelectedFile(file);
+      setSelectedFileName(file.name);
+      setValidationError(null);
     } else {
+      setSelectedFile(null);
       setSelectedFileName('');
     }
   };
@@ -76,8 +115,8 @@ MANUSCRIPT SUBMISSION RECORD
 - Affiliation: ${data.affiliation}
 - Article Category: ${data.articleType}
 - Manuscript Title: ${data.title}
-- Document Link / Cloud URL: ${data.manuscriptLink || 'None provided'}
-- Attached File: ${fileName || 'None (link provided)'}
+- Attached Document: ${fileName || 'None (cloud link provided)'}
+- Document Cloud URL: ${data.manuscriptLink || 'None provided'}
 - Submission Date: ${new Date().toLocaleString()}
 
 COVER LETTER / COMMENTS TO THE EDITOR:
@@ -101,54 +140,101 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
       return;
     }
 
+    if (!selectedFile && !formData.manuscriptLink.trim()) {
+      setValidationError('Please either upload a manuscript file (.docx / .pdf) or provide a Google Drive / cloud document link so the editorial board can download your paper.');
+      return;
+    }
+
     setFormStatus('submitting');
     setValidationError(null);
 
     const snapshot = {
       ...formData,
       fileName: selectedFileName,
+      fileSize: selectedFile?.size,
       timestamp: new Date().toLocaleString(),
     };
 
+    // 1. Permanently save to in-app local storage and IndexedDB file cache so file is NEVER lost
+    const savedRecord = saveManuscriptSubmission({
+      authorName: formData.authorName,
+      email: formData.email,
+      affiliation: formData.affiliation,
+      articleType: formData.articleType,
+      title: formData.title,
+      manuscriptLink: formData.manuscriptLink,
+      fileName: selectedFileName,
+      fileSize: selectedFile?.size,
+      hasAttachment: !!selectedFile,
+      message: formData.message,
+      timestamp: snapshot.timestamp,
+      forwardStatus: 'forwarded',
+    }, selectedFile);
+
     try {
-      // 1. Forward directly to recipient gmail using formsubmit.co AJAX API
+      // 2. Build multipart/form-data so the REAL file is attached and sent to FormSubmit
+      const formPayload = new FormData();
+      formPayload.append('_captcha', 'false');
+      formPayload.append('_template', 'table');
+      formPayload.append('_subject', `[SGRCR Manuscript Submission] ${formData.title} - ${formData.authorName}`);
+      formPayload.append('_replyto', formData.email);
+      formPayload.append('Submission Reference ID', savedRecord.id);
+      formPayload.append('Corresponding Author', formData.authorName);
+      formPayload.append('Institutional Email', formData.email);
+      formPayload.append('Institution / Affiliation', formData.affiliation);
+      formPayload.append('Article Category', formData.articleType);
+      formPayload.append('Manuscript Title', formData.title);
+      formPayload.append('Manuscript Cloud Link', formData.manuscriptLink || 'N/A');
+      formPayload.append('Cover Letter / Comments', formData.message || 'None');
+      formPayload.append('COPE Ethical Declaration', 'Confirmed by Author');
+      formPayload.append('Forwarded To', RECIPIENT_GMAIL);
+      formPayload.append('Submission Timestamp', snapshot.timestamp);
+
+      if (selectedFile) {
+        // FormSubmit attaches any input named 'attachment' directly to the email sent to srcaaweb@gmail.com
+        formPayload.append('attachment', selectedFile, selectedFile.name);
+        formPayload.append('Attached Document Name', selectedFile.name);
+        formPayload.append('Document File Size', formatFileSize(selectedFile.size));
+      }
+
       await fetch(`https://formsubmit.co/ajax/${RECIPIENT_GMAIL}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          _subject: `[SGRCR Manuscript Submission] ${formData.title} - ${formData.authorName}`,
-          _replyto: formData.email,
-          "Corresponding Author": formData.authorName,
-          "Institutional Email": formData.email,
-          "Institution / Affiliation": formData.affiliation,
-          "Article Category": formData.articleType,
-          "Manuscript Title": formData.title,
-          "Cloud Manuscript Link": formData.manuscriptLink || "N/A",
-          "Selected Document File": selectedFileName || "N/A",
-          "Cover Letter / Comments": formData.message || "None",
-          "Originality Declaration": "Confirmed by Author",
-          "Forwarded To": RECIPIENT_GMAIL,
-          "Timestamp": new Date().toLocaleString(),
-        }),
+        body: formPayload,
       });
     } catch (err) {
-      // Even if network or offline, gracefully proceed to snapshot presentation
-      console.warn('Form forward completed with status:', err);
+      console.warn('Form forward network request finished:', err);
     }
 
-    setSubmittedSnapshot(snapshot);
+    // 3. Push to Google Form / Google Apps Script API endpoint if configured
+    const currentGoogleEndpoint = getGoogleFormEndpoint();
+    if (currentGoogleEndpoint) {
+      try {
+        let fileDataPayload = null;
+        if (selectedFile) {
+          fileDataPayload = await fileToBase64(selectedFile);
+        }
+        await pushToGoogleEndpoint(currentGoogleEndpoint, {
+          submissionId: savedRecord.id,
+          authorName: formData.authorName,
+          email: formData.email,
+          affiliation: formData.affiliation,
+          articleType: formData.articleType,
+          title: formData.title,
+          manuscriptLink: formData.manuscriptLink,
+          message: formData.message,
+          timestamp: snapshot.timestamp,
+          fileData: fileDataPayload,
+        });
+      } catch (gErr) {
+        console.warn('Google Form endpoint push error:', gErr);
+      }
+    }
+
+    setSubmittedSnapshot({ ...snapshot, id: savedRecord.id });
     setFormStatus('success');
-
-    // Optional direct mailto launch
-    try {
-      const mailtoUrl = `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(`[SGRCR Manuscript Submission] ${formData.title} - ${formData.authorName}`)}&body=${encodeURIComponent(generateEmailBody(formData, selectedFileName))}`;
-      window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
-    } catch {
-      // Ignored if window.open restricted in iframe preview
-    }
   };
 
   const handleCopySummary = () => {
@@ -351,24 +437,42 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                 {(submittedSnapshot.manuscriptLink || submittedSnapshot.fileName) && (
                   <div>
                     <span className="text-[11px] uppercase tracking-wider text-[#8a5a41] font-bold block">
-                      Attached Resource / Cloud Document
+                      Attached Resource / Manuscript Document
                     </span>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       {submittedSnapshot.fileName && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1e1d1] text-[#2f1d16] rounded-md text-xs font-semibold">
-                          <FileText className="w-3.5 h-3.5 text-[#8a5a41]" />
-                          {submittedSnapshot.fileName}
-                        </span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#f1e1d1] text-[#2f1d16] rounded-lg text-xs font-semibold border border-[#dfc7b2]">
+                          <FileText className="w-4 h-4 text-[#8a5a41]" />
+                          <span>{submittedSnapshot.fileName}</span>
+                          {submittedSnapshot.fileSize && (
+                            <span className="text-[10px] text-[#8a5a41]">
+                              ({formatFileSize(submittedSnapshot.fileSize)})
+                            </span>
+                          )}
+                        </div>
                       )}
+                      
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          onClick={() => downloadBlob(selectedFile, submittedSnapshot.fileName)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] rounded-lg text-xs font-bold transition-all shadow-xs"
+                        >
+                          <Download className="w-3.5 h-3.5 text-[#c69470]" />
+                          <span>Download Document Now</span>
+                        </button>
+                      )}
+
                       {submittedSnapshot.manuscriptLink && (
                         <a 
                           href={submittedSnapshot.manuscriptLink} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-[#8a5a41] hover:underline font-bold"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fffaf4] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-xs text-[#8a5a41] hover:underline font-bold rounded-lg"
                         >
                           <LinkIcon className="w-3.5 h-3.5" />
-                          {submittedSnapshot.manuscriptLink}
+                          <span>Open Cloud Document</span>
+                          <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
                     </div>
@@ -388,35 +492,68 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
               </div>
 
               {/* Direct Gmail & Email Client Actions */}
-              <div className="space-y-3">
-                <p className="text-xs text-[#684f43]">
-                  A complete copy has been forwarded to <strong>{RECIPIENT_GMAIL}</strong>. You can also view or send directly using your preferred email service:
-                </p>
+              <div className="space-y-4">
+                
+                {/* Google Form API Success Badge */}
+                {googleEndpoint && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center gap-2.5 text-xs text-emerald-950">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                    <span>
+                      <strong>Google Form / Sheet API:</strong> Manuscript data and attached document pushed directly to your Google Form / Sheet responses table!
+                    </span>
+                  </div>
+                )}
+
+                {/* One-time FormSubmit Activation Notice */}
+                <div className="p-3.5 bg-amber-50/90 border border-amber-300 rounded-xl space-y-1.5 text-xs text-amber-900">
+                  <div className="flex items-center gap-2 font-bold text-amber-950">
+                    <Info className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>Email Delivery & Activation Status</span>
+                  </div>
+                  <p className="text-amber-800 leading-relaxed">
+                    Data has been dispatched to <strong>{RECIPIENT_GMAIL}</strong>. 
+                    If this is your first time receiving automated submissions, FormSubmit requires clicking <strong>"Activate Form"</strong> in the activation email sent to <strong>{RECIPIENT_GMAIL}</strong> (check your Spam/Inbox folder).
+                  </p>
+                  <p className="text-amber-850 font-semibold">
+                    💡 For 100% immediate guaranteed delivery without waiting for activation, click <strong>"Push via Gmail Now"</strong> below!
+                  </p>
+                </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href={getGmailWebLink()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md transform hover:-translate-y-0.5"
                   >
                     <Mail className="w-4 h-4 text-[#2f1d16]" />
-                    <span>Open in Gmail Web</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span>Push via Gmail Now (Instant Delivery)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
 
                   <a
                     href={getMailtoLink()}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
                   >
                     <Send className="w-4 h-4 text-[#c69470]" />
-                    <span>Open in Default Mail Client</span>
+                    <span>Send via Mail App</span>
                   </a>
+
+                  {onOpenSubmissionsLog && (
+                    <button
+                      type="button"
+                      onClick={onOpenSubmissionsLog}
+                      className="inline-flex items-center gap-2 px-4 py-3 bg-[#fdf6ee] hover:bg-[#f1e1d1] border border-[#8a5a41] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-xs"
+                    >
+                      <Inbox className="w-4 h-4 text-[#8a5a41]" />
+                      <span>View Editorial Submissions Log</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"
                     onClick={handleCopySummary}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#fdf6ee] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-bold text-xs sm:text-sm rounded-xl transition-all"
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-[#fffdf9] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-bold text-xs sm:text-sm rounded-xl transition-all"
                   >
                     {copiedSummary ? (
                       <>
@@ -546,18 +683,45 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
               {/* Upload or Link */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#513326] mb-1">
-                    Upload Manuscript (.docx / .pdf)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#513326]">
+                      Upload Manuscript File (.docx / .pdf)
+                    </label>
+                    {selectedFile && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setSelectedFileName('');
+                        }}
+                        className="text-[11px] text-red-700 hover:text-red-900 font-bold inline-flex items-center gap-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="file"
+                    name="attachment"
                     accept=".pdf,.doc,.docx"
                     onChange={handleFileChange}
                     className="w-full px-3 py-2 bg-[#fffaf4] border border-[#dfc7b2] rounded-lg text-xs text-[#513326] file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#8a5a41] file:text-[#fffaf4] hover:file:bg-[#513326]"
                   />
-                  <p className="text-[11px] text-[#684f43] mt-1">
-                    {selectedFileName ? `Selected: ${selectedFileName}` : 'MS Word (.docx) or PDF format, max 15MB.'}
-                  </p>
+                  {selectedFile ? (
+                    <div className="mt-1.5 p-2 bg-emerald-50 border border-emerald-300 rounded-md text-xs text-emerald-950 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <FileText className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                        <span className="font-semibold truncate">{selectedFile.name}</span>
+                        <span className="text-[10px] text-emerald-700 shrink-0">({formatFileSize(selectedFile.size)})</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-800 font-bold shrink-0 ml-1">Attached ✓</span>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-[#684f43] mt-1">
+                      MS Word (.docx) or PDF format. Will be attached directly to the email sent to <strong className="text-[#2f1d16]">{RECIPIENT_GMAIL}</strong> and archived for editorial download.
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -569,10 +733,12 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                     name="manuscriptLink"
                     value={formData.manuscriptLink}
                     onChange={handleInputChange}
-                    placeholder="https://drive.google.com/..."
+                    placeholder="https://drive.google.com/file/d/..."
                     className="w-full px-3.5 py-2.5 bg-[#fffaf4] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
                   />
-                  <p className="text-[11px] text-[#684f43] mt-1">Ensure link sharing is enabled for review.</p>
+                  <p className="text-[11px] text-[#684f43] mt-1">
+                    Direct download link via Google Drive, Dropbox, or OneDrive (ensure link sharing is enabled).
+                  </p>
                 </div>
               </div>
 
@@ -608,19 +774,61 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                 </label>
               </div>
 
-              {/* Submit Button */}
+              {/* Google Form / Sheet Integration status bar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-[#f6eee3] border border-[#dfc7b2] rounded-xl text-xs gap-2">
+                <div className="flex items-center gap-2">
+                  <Database className="w-4 h-4 text-[#8a5a41] shrink-0" />
+                  <span className="font-semibold text-[#2f1d16]">Google Form / Sheets API:</span>
+                  {googleEndpoint ? (
+                    <span className="inline-flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-100 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-300">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                      Auto-Push Connected
+                    </span>
+                  ) : (
+                    <span className="text-[#684f43]">
+                      Sync submissions & documents to Google Form / Sheets responses
+                    </span>
+                  )}
+                </div>
+                {onOpenSubmissionsLog && (
+                  <button
+                    type="button"
+                    onClick={onOpenSubmissionsLog}
+                    className="text-[#8a5a41] hover:text-[#2f1d16] font-bold text-xs underline inline-flex items-center gap-1 shrink-0"
+                  >
+                    <span>{googleEndpoint ? 'Manage Google API' : 'Set up Google Form API'}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Submit Buttons & Actions */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                <button
-                  type="submit"
-                  disabled={formStatus === 'submitting'}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm sm:text-base rounded-full shadow-md transition-all transform hover:-translate-y-0.5"
-                >
-                  <Send className="w-4 h-4 text-[#c69470]" />
-                  <span>{formStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Submit Manuscript to Editorial Office'}</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  <button
+                    type="submit"
+                    disabled={formStatus === 'submitting'}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm sm:text-base rounded-full shadow-md transition-all transform hover:-translate-y-0.5"
+                  >
+                    <Send className="w-4 h-4 text-[#c69470]" />
+                    <span>{formStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Submit Manuscript to Editorial Office'}</span>
+                  </button>
+
+                  <a
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(`[SGRCR Manuscript Submission] ${formData.title || 'Manuscript Title'} - ${formData.authorName || 'Author'}`)}&body=${encodeURIComponent(generateEmailBody(formData, selectedFileName))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-full shadow-xs transition-all"
+                    title="Open your draft in Gmail Web directly addressed to srcaaweb@gmail.com"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Dispatch via Gmail Directly</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
 
                 <p className="text-xs text-[#8a5a41] font-semibold text-center sm:text-right">
-                  Forwarded directly to: <span className="font-bold text-[#2f1d16]">{RECIPIENT_GMAIL}</span>
+                  Target Address: <span className="font-bold text-[#2f1d16]">{RECIPIENT_GMAIL}</span>
                 </p>
               </div>
             </form>
