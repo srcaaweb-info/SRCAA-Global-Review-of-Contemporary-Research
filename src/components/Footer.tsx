@@ -45,9 +45,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
               <strong>Shakti Research Centre and Academia (SRCAA)</strong>. Digital academic and research institution established in 2024, accredited under the International Trade Council (ITC) Framework.
             </p>
 
-          
-
-         {/* Col 2: Journal Quick Links */}
+          {/* Col 2: Journal Quick Links */}
           <div>
             <h4 className="font-serif font-bold text-base text-[#fffaf4] mb-3 pb-1 border-b border-[#3d271e]">
               Journal Sections
@@ -202,3 +200,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
     </footer>
   );
 };
+          
+
+         
