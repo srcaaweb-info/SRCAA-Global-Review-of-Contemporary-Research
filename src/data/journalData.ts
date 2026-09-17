@@ -178,6 +178,57 @@ export const EDITORIAL_MEMBERS: EditorialMember[] = [
     email: 'raji.p@kgi.edu.in',
     institutionalProfile: 'https://kimsbengaluru.edu.in/faculty-list',
   },
+  {
+    id: 'dr-kavikumar-jacob',
+    name: 'Dr. Kavikumar Jacob',
+    role: 'Associate Professor of Mathematics',
+    department: 'Department of Mathematics and Statistics, Faculty of Applied Sciences and Technology',
+    category: 'advisory',
+    affiliation: 'Universiti Tun Hussein Onn Malaysia',
+    location: 'Campus Pagoh, 84600 Pagoh, Johor, Malaysia',
+    initials: 'KJ',
+    avatarBg: '#8a5a41',
+    email: 'kavi@uthm.edu.my',
+    institutionalProfile: 'https://community.uthm.edu.my/kavi',
+    additionalRoles: [
+      'Faculty of Applied Sciences and Technology',
+      'Universiti Tun Hussein Onn Malaysia'
+    ],
+  },
+  {
+    id: 'dr-monica-bhutani',
+    name: 'Dr. Monica Bhutani',
+    role: 'Associate Professor',
+    department: 'Department of Electronics and Communications',
+    category: 'advisory',
+    affiliation: 'Bharati Vidyapeeth’s College of Engineering',
+    subAffiliation: 'Adjunct Research Faculty and Postdoc Supervisor, Lincoln University College, Malaysia',
+    location: 'New Delhi, India',
+    initials: 'MB',
+    avatarBg: '#513326',
+    email: 'monica.bhutani@bharatividyapeeth.edu',
+    institutionalProfile: 'https://bvcoend.ac.in/index.php/monica-bhutani/',
+    additionalRoles: [
+      'Adjunct Research Faculty & Postdoc Supervisor, Lincoln University College, Malaysia'
+    ],
+  },
+  {
+    id: 'dr-s-n-venkatesh',
+    name: 'Dr. S. N. Venkatesh',
+    role: 'Principal',
+    category: 'leadership',
+    affiliation: 'Seshadripuram First Grade College',
+    subAffiliation: 'Director – Seshadripuram Research Foundation (SRF) | Editor-in-Chief – Seshadripuram Journal of Social Sciences (SJSS)',
+    location: 'Bengaluru, Karnataka, India',
+    initials: 'SV',
+    avatarBg: '#2f1d16',
+    email: 'srf.sjss@sfgc.ac.in',
+    institutionalProfile: 'https://srf.set.edu.in/recognised-guides',
+    additionalRoles: [
+      'Director – Seshadripuram Research Foundation (SRF)',
+      'Editor-in-Chief – Seshadripuram Journal of Social Sciences (SJSS)'
+    ],
+  },
 ];
 
 export const ARTICLES: Article[] = [

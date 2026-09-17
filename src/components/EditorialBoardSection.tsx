@@ -52,16 +52,21 @@ export const EditorialBoardSection: React.FC = () => {
           label: 'Leadership',
           badgeClass: 'bg-[#f1e1d1] border-[#dfc7b2] text-[#513326]',
         };
-      case 'advisory':
+      case 'advisory': {
+        const isInternational = 
+          member.location.includes('Australia') || 
+          member.location.includes('Malaysia') || 
+          (member.subAffiliation && member.subAffiliation.includes('Malaysia'));
         return {
-          icon: member.location.includes('Australia') ? (
+          icon: isInternational ? (
             <Globe2 className="w-3.5 h-3.5 text-[#8a5a41]" />
           ) : (
             <Building2 className="w-3.5 h-3.5 text-[#8a5a41]" />
           ),
-          label: member.location.includes('Australia') ? 'International Advisory' : 'Industry & Project Advisory',
+          label: isInternational ? 'International Advisory' : 'Industry & Project Advisory',
           badgeClass: 'bg-[#fdf6ee] border-[#dfc7b2] text-[#684f43]',
         };
+      }
       case 'specialist':
         return {
           icon: <Sparkles className="w-3.5 h-3.5 text-[#8a5a41]" />,
