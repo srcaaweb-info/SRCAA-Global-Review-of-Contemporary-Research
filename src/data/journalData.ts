@@ -361,8 +361,8 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-008',
     articleNumber: 8,
-    title: 'Strategic Leadership and Behavioral Dynamics in Digital Organisational Ecosystems',
-    authors: ['Contributing Scholars', 'SRCAA Research Group'],
+    title: 'Artificial Intelligence in Education: An Empirical Analysis of Its Influence on Students’ Engagement',
+    authors: ['SRIDEVI M', ''],
     volume: 1,
     issue: 1,
     year: 2026,
