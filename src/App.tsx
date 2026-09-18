@@ -48,7 +48,6 @@ export default function App() {
           <CookieBanner />
           <Navbar 
             onOpenArticleArchive={handleOpenArticleArchive} 
-            onOpenSubmissionsLog={() => setIsSubmissionsModalOpen(true)}
           />
           <main className="flex-1">
             <Hero />
@@ -62,7 +61,7 @@ export default function App() {
             <ArchivesSection onOpenArchives={handleOpenArticleArchive} />
             <ContactSection />
           </main>
-          <Footer onOpenSubmissionsLog={() => setIsSubmissionsModalOpen(true)} />
+          <Footer />
 
           <EditorialSubmissionsModal 
             isOpen={isSubmissionsModalOpen} 
