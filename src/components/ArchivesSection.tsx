@@ -173,7 +173,7 @@ export const ArchivesSection: React.FC<ArchivesSectionProps> = ({ onOpenArchives
                             <p className="font-bold text-xs uppercase tracking-wider text-[#8a5a41] mb-1">
                               Abstract:
                             </p>
-                            <p>{article.abstract}</p>
+                            <p className="whitespace-pre-line leading-relaxed">{article.abstract}</p>
                             <p className="mt-2 text-[11px] text-[#8a5a41]">
                               <strong>DOI Identifier:</strong> {article.doi} (Crossref)
                             </p>
