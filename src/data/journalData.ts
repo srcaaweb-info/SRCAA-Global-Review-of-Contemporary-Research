@@ -367,7 +367,7 @@ export const ARTICLES: Article[] = [
     issue: 1,
     year: 2026,
     pages: '99–112',
-    driveLink: 'https://drive.google.com/',
+    driveLink: 'https://drive.google.com/file/d/1hpRloUC9zikzBP3brFJa-ZeXEY2BcmBZ/view?usp=sharing',
     doi: '10.xxxx/sgrcr.2026.01.008',
     abstract: 'Analyzing executive decision velocity, leadership adaptability, and employee engagement models within decentralized, technology-driven enterprise settings.',
     keywords: ['Strategic Leadership', 'Organisational Behaviour', 'Digital Ecosystems', 'Workplace Innovation'],
