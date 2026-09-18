@@ -10,7 +10,6 @@ import {
   BookOpen, 
   ShieldCheck, 
   Search,
-  Phone,
   ExternalLink,
   Briefcase,
   Layers,
@@ -260,7 +259,7 @@ export const EditorialBoardSection: React.FC = () => {
 
                 {/* Card Contact Links & Profile Badges */}
                 <div className="mt-5 pt-3.5 border-t border-[#dfc7b2] space-y-2">
-                  {/* Email & Phone Contact Bar */}
+                  {/* Email Contact Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     {member.email && (
                       <a
@@ -270,17 +269,6 @@ export const EditorialBoardSection: React.FC = () => {
                       >
                         <Mail className="w-3.5 h-3.5 text-[#8a5a41]" />
                         <span className="truncate max-w-[200px]">{member.email}</span>
-                      </a>
-                    )}
-
-                    {member.phone && (
-                      <a
-                        href={`tel:${member.phone.replace(/[^0-9+]/g, '')}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#684f43] hover:text-[#2f1d16] transition-colors"
-                        title={`Call ${member.name}`}
-                      >
-                        <Phone className="w-3.5 h-3.5 text-[#8a5a41]" />
-                        <span>{member.phone}</span>
                       </a>
                     )}
                   </div>
