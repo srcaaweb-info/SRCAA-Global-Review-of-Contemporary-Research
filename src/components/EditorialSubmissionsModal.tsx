@@ -33,7 +33,7 @@ import {
   StoredInquiry 
 } from '../utils/submissionStorage';
 
-const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
+const RECIPIENT_GMAIL = 'srcaacontact@gmail.com';
 
 interface Props {
   isOpen: boolean;
@@ -187,7 +187,7 @@ function doPost(e) {
         body: JSON.stringify({
           _subject: '[SGRCR Activation Test] Verify Form Forwarding',
           _captcha: 'false',
-          notice: 'Please click the Activate Form button if this is your first time setting up FormSubmit for srcaaweb@gmail.com',
+          notice: `Please click the Activate Form button if this is your first time setting up FormSubmit for ${RECIPIENT_GMAIL}`,
           timestamp: new Date().toLocaleString(),
         }),
       });
@@ -814,7 +814,7 @@ function doPost(e) {
                     className="inline-flex items-center gap-2 px-4 py-2 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] text-xs font-bold rounded-lg transition-colors shadow-xs"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${activationStatus === 'sending' ? 'animate-spin' : ''}`} />
-                    <span>{activationStatus === 'sending' ? 'Sending Activation Ping...' : 'Resend Activation Email to srcaaweb@gmail.com'}</span>
+                    <span>{activationStatus === 'sending' ? 'Sending Activation Ping...' : `Resend Activation Email to ${RECIPIENT_GMAIL}`}</span>
                   </button>
 
                   {activationStatus === 'sent' && (
