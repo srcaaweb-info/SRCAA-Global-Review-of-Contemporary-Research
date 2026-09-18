@@ -10,8 +10,7 @@ import {
   Menu, 
   X, 
   ExternalLink,
-  Info,
-  Inbox
+  Info
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -121,19 +120,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArc
               Contact
             </a>
 
-            {/* Submissions Log and Archives */}
+            {/* SRCAA Portal and Archives */}
             <div className="pl-2 border-l border-[#dfc7b2] flex items-center gap-2">
-              {onOpenSubmissionsLog && (
-                <button
-                  type="button"
-                  onClick={onOpenSubmissionsLog}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf6ee] text-[#513326] hover:text-[#2f1d16] hover:bg-[#f1e1d1] text-xs xl:text-sm font-bold rounded-full shadow-xs transition-all border border-[#dfc7b2]"
-                  title="View received manuscript submissions and editorial inquiries"
-                >
-                  <Inbox className="w-3.5 h-3.5 text-[#8a5a41]" />
-                  <span>Submissions Log</span>
-                </button>
-              )}
+              <a
+                href="https://www.srcaa.co.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#fdf6ee] text-[#513326] hover:text-[#2f1d16] hover:bg-[#f1e1d1] text-xs xl:text-sm font-bold rounded-full shadow-xs transition-all border border-[#dfc7b2]"
+                title="Visit Shakti Research Centre and Academia (SRCAA) Official Website"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#8a5a41]" />
+                <span>SRCAA Portal</span>
+              </a>
 
               <a
                 href="/archive.html"
@@ -287,19 +285,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenArchives, onOpenArticleArc
               Contact & Editorial Office
             </a>
 
-            {onOpenSubmissionsLog && (
-              <button
-                type="button"
-                onClick={() => {
-                  closeMobileMenu();
-                  onOpenSubmissionsLog();
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-semibold text-[#513326] hover:bg-[#f1e1d1] active:bg-[#dfc7b2] text-left"
-              >
-                <Inbox className="w-4 h-4 text-[#8a5a41]" />
-                Editorial Submissions Log
-              </button>
-            )}
+            <a 
+              href="https://www.srcaa.co.in/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={closeMobileMenu}
+              className="flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-semibold text-[#513326] hover:bg-[#f1e1d1] active:bg-[#dfc7b2]"
+            >
+              <span className="flex items-center gap-3">
+                <ExternalLink className="w-4 h-4 text-[#8a5a41]" />
+                SRCAA Website (srcaa.co.in)
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#8a5a41]" />
+            </a>
           </div>
 
           <div className="pt-3 border-t border-[#dfc7b2] flex flex-col gap-2">
