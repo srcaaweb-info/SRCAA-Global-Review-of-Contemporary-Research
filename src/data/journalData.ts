@@ -343,8 +343,8 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-007',
     articleNumber: 7,
-    title: 'Interdisciplinary Synthesis on Contemporary Societal Challenges and Legal Frameworks',
-    authors: ['Contributing Scholars', 'SRCAA Research Group'],
+    title: 'WORKFORCE SKILLS FOR BUSINESS 2030: NAVIGATING THE FUTURE OF WORK IN AN AI-AUGMENTED ECONOMY',
+    authors: ['GEETHA R', ''],
     volume: 1,
     issue: 1,
     year: 2026,
@@ -369,7 +369,8 @@ export const ARTICLES: Article[] = [
     pages: '99–112',
     driveLink: 'https://drive.google.com/file/d/1hpRloUC9zikzBP3brFJa-ZeXEY2BcmBZ/view?usp=sharing',
     doi: '10.xxxx/sgrcr.2026.01.008',
-    abstract: 'Analyzing executive decision velocity, leadership adaptability, and employee engagement models within decentralized, technology-driven enterprise settings.',
+    abstract: 'The integration of artificial intelligence (AI)in education has transformed traditional learning environments by enhancing accessibility, personalization, and efficiency. This study aims to empirically analyze the influence of AI on students’ engagement and learning outcomes in Bengaluru. Using primary data collected from students through a structured questionnaire, the study evaluates how AI-based tools impact academic interaction, participation, and
+    performance. The findings indicate that AI significantly enhances student engagement and improves learning outcomes, although certain challenges such as overdependence and reduced critical thinking were observed. The study contributes to understanding the role of in shaping modern educational practices.',
     keywords: ['Strategic Leadership', 'Organisational Behaviour', 'Digital Ecosystems', 'Workplace Innovation'],
     category: 'Commerce & Management',
     publishedDate: 'March 2026',
