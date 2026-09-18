@@ -29,7 +29,7 @@ import {
   fileToBase64
 } from '../utils/submissionStorage';
 
-const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
+const RECIPIENT_GMAIL = 'srcaacontact@gmail.com';
 
 interface Props {
   onOpenSubmissionsLog?: () => void;
@@ -363,7 +363,7 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
               Submit Your Manuscript Online
             </h3>
             <p className="text-xs sm:text-sm text-[#684f43] mt-1">
-              All submissions are recorded and forwarded directly to the Editorial Office at <span className="text-[#8a5a41] font-bold">srcaaweb@gmail.com</span>.
+              All submissions are recorded and forwarded directly to the Editorial Office at <span className="text-[#8a5a41] font-bold">{RECIPIENT_GMAIL}</span>.
             </p>
           </div>
 
@@ -811,7 +811,7 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm sm:text-base rounded-full shadow-md transition-all transform hover:-translate-y-0.5"
                   >
                     <Send className="w-4 h-4 text-[#c69470]" />
-                    <span>{formStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Submit Manuscript to Editorial Office'}</span>
+                    <span>{formStatus === 'submitting' ? `Forwarding to ${RECIPIENT_GMAIL}...` : 'Submit Manuscript to Editorial Office'}</span>
                   </button>
 
                   <a
@@ -819,7 +819,7 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-full shadow-xs transition-all"
-                    title="Open your draft in Gmail Web directly addressed to srcaaweb@gmail.com"
+                    title={`Open your draft in Gmail Web directly addressed to ${RECIPIENT_GMAIL}`}
                   >
                     <Mail className="w-4 h-4" />
                     <span>Dispatch via Gmail Directly</span>
