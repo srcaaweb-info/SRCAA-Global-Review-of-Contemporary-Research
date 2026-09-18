@@ -95,7 +95,6 @@ export const EDITORIAL_MEMBERS: EditorialMember[] = [
     initials: 'PN',
     avatarBg: '#513326',
     email: 'pruthvi.n@suranacollege.edu.in',
-    phone: '080-2664 2292',
     additionalRoles: [
       'AICTE & Bengaluru City University affiliated',
       'BOS & BOE, National College (Autonomous)'
@@ -148,7 +147,6 @@ export const EDITORIAL_MEMBERS: EditorialMember[] = [
     initials: 'DK',
     avatarBg: '#513326',
     email: 'dinesh.mba@sairam.edu.in',
-    phone: '+91 98844 90116',
     institutionalProfile: 'https://sims.sairam.edu.in/core-faculty/',
   },
   {
@@ -162,7 +160,6 @@ export const EDITORIAL_MEMBERS: EditorialMember[] = [
     initials: 'SD',
     avatarBg: '#3d271e',
     email: 'drsowmyasharath23@gmail.com',
-    phone: '+91 90367 60688',
   },
   {
     id: 'dr-raji-pillai',
@@ -235,7 +232,7 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-001',
     articleNumber: 1,
-    title: 'Conscious Consumers, Connected Futures: Digital Marketing for Sustainable FMCG Growth Shaping Green Choices in the Digital Era',
+    title: 'Conscious Consumers, Connected Futures: Digital Marketing for Sustainable FMCG Growth – Shaping Green Choices in the Digital Era',
     authors: ['BHARATHI S', 'Dr. V. HEMANTH KUMAR'],
     volume: 1,
     issue: 1,
@@ -243,7 +240,13 @@ export const ARTICLES: Article[] = [
     pages: '1–14',
     driveLink: 'https://drive.google.com/file/d/1Hu-wST6DfNMwrbWjypvts0pl3eSD1QS1/view',
     doi: '10.xxxx/sgrcr.2026.01.001',
-    abstract: 'This research paper investigates the dynamics between digital marketing frameworks and sustainable consumption choices within the Fast-Moving Consumer Goods (FMCG) industry. It explores how digital campaigns, social influence, transparent green labelling, and algorithmic targeting shape environmentally conscious decision-making among contemporary consumers, offering strategic models for brand stewardship in the modern digital era.',
+    abstract: `This research paper examines the role of digital marketing in fostering sustainability within the Fast-Moving Consumer Goods (FMCG) sector, with a focus on how conscious consumers and digital innovation collectively shape greener choices in a connected society. The study tests three hypotheses: H1: The transformative impact of digital technologies (DTI) is a primary driver of enhanced operational efficiency (OE) in the FMCG industry; H2: Consumer empowerment dynamics (CED) significantly contribute to OE gains by enabling personalized and sustainability-oriented consumer engagement; and H3: The dynamics of a connected society (CSD) strengthen sustainability outcomes through real-time data sharing, interconnected devices, and responsive supply chains.
+
+The research utilized a quantitative approach, surveying 308 participants (N=308) representing diverse consumer and industry perspectives. Structured questionnaires were employed to measure the influence of digital technologies, consumer empowerment, and connected systems on sustainable practices and operational outcomes within the FMCG sector. Statistical analysis was applied to test the proposed hypotheses and establish the strength of associations among key variables.
+
+Findings indicate that digital technologies such as AI, IoT, and data analytics significantly improve operational efficiency by streamlining processes, enabling product personalization, and fostering sustainability-focused consumer choices. Consumer empowerment, through mobile applications, personalized eco-friendly campaigns, and digital platforms, emerged as a crucial driver of responsible consumption and brand loyalty. Furthermore, the dynamics of a connected society amplify these effects by enabling data-driven decisions, sustainable supply chain responsiveness, and stronger consumer-brand relationships.
+
+The study concludes that FMCG firms should prioritize investments in digital tools that simultaneously enhance efficiency and foster sustainability-driven consumer engagement. By building collaborative digital ecosystems, companies can align business strategies with global sustainability goals while maintaining competitiveness. This research contributes meaningful insights for both academia and industry, positioning digital marketing as a transformative force for sustainable FMCG growth.`,
     keywords: ['Sustainable FMCG', 'Green Marketing', 'Digital Transformation', 'Consumer Behaviour', 'Eco-Friendly Branding'],
     category: 'Commerce & Management',
     publishedDate: 'January 2026',
@@ -253,15 +256,19 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-002',
     articleNumber: 2,
-    title: 'Ai In Business Decision Making: Transforming Organisational Intelligence In The Digital Era; Digital Era',
-    authors: ['Dr. Anjana Radhakrishnana', 'Shrivardhan P'],
+    title: 'AI in Business Decision Making: Transforming Organisational Intelligence in the Digital Era',
+    authors: ['Dr. ANJANA RADHAKRISHNAN', 'SHRIVARDHAN P'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '15–28',
-    driveLink: 'https://drive.google.com/file/d/1b1g6LAa6yEDjKt34e94xksqSJb9HUcC2/view',
+    driveLink: 'https://drive.google.com/file/d/1b1g6LAa6yEDjKt34e94xksqSJb9HUcC2/view?usp=sharing',
     doi: '10.xxxx/sgrcr.2026.01.002',
-    abstract: 'An empirical and conceptual inquiry into how Artificial Intelligence is reshaping executive decision-making pipelines. The study details how predictive analytics, natural language intelligence, and automated heuristic models transform organizational agility, mitigate human cognitive biases, and establish resilient decision architectures in high-velocity market environments.',
+    abstract: `Artificial Intelligence (AI) has emerged as a transformative force in contemporary business ecosystems, fundamentally reshaping how organisations collect, analyse, and act upon information to make strategic decisions. This paper investigates the multifaceted role of AI in business decision-making across operational, managerial, and strategic levels with a focus on real-world adoption patterns between 2020 and 2025.
+
+Using a mixed-methods research design combining a quantitative survey of 280 business executives with qualitative case analyses of five leading organisations, the study reveals that AI-driven decision-making tools significantly enhance accuracy, speed, and cost-efficiency. Organisations integrating AI into their core decision frameworks report a 38.4% improvement in decision accuracy and a 31.7% reduction in decision-cycle time. However, key barriers including algorithmic bias, data privacy concerns, workforce resistance, and infrastructure limitations persist.
+
+The paper proposes a structured AI Decision Integration Framework (ADIF) as a roadmap for sustainable AI adoption. Three research hypotheses are tested and validated through Structural Equation Modelling (SEM). Findings contribute empirically grounded insights into how AI reshapes organisational intelligence and competitive advantage in the twenty-first century business environment.`,
     keywords: ['Artificial Intelligence', 'Decision Support Systems', 'Organisational Intelligence', 'Digital Strategy', 'Executive Analytics'],
     category: 'Commerce & Technology',
     publishedDate: 'February 2026',
@@ -271,15 +278,21 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-003',
     articleNumber: 3,
-    title: 'GEN Z Expections From HR : A Study On Flexibility, Mental Health Support And Digital Integration; Digital Era',
-    authors: ['DR. Deeksha B Kailash', 'Dr. Brahma Teja N'],
+    title: 'Gen Z Expectations from HR: A Study on Flexibility, Mental Health Support and Digital Integration',
+    authors: ['DEEKSHA B KAILASH', 'BRAHMA TEJA N'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '29–42',
-    driveLink: 'https://drive.google.com/file/d/14YEmwCfSHp1FgggVh-pTCJO_nFEfi60l/view?usp=sharing',
+    driveLink: 'https://drive.google.com/file/d/1yM97IZC77tpk2Ro4IIv8XgxPZ5XlY4_g/view?usp=sharing',
     doi: '10.xxxx/sgrcr.2026.01.003',
-    abstract: 'This study investigates the evolving workplace expectations of Generation Z professionals entering modern corporate spaces. Focusing on institutional flexibility, proactive mental well-being initiatives, and seamless digital tool integration, the paper provides evidence-backed recommendations for Human Resource strategists seeking to attract, engage, and sustain young talent in a hybrid workplace ecosystem.',
+    abstract: `Generation Z is rapidly emerging as a dominant segment of the global workforce, bringing distinct expectations shaped by digital transformation, globalization, and post-pandemic workplace realities. This study examines Gen Z expectations from Human Resource (HR) practices with specific focus on workplace flexibility, mental health support, and digital integration, and analyzes their impact on perceived HR effectiveness.
+
+The research adopts a descriptive and analytical design using primary data collected from 80 Gen Z employees aged 22–27 across IT, service, and startup sectors. A structured questionnaire based on a 5-point Likert scale was used for data collection. Statistical tools such as descriptive statistics, reliability analysis (Cronbach’s Alpha), correlation, and multiple regression were applied to analyze the data.
+
+The findings indicate that all three independent variables—workplace flexibility, mental health support, and digital integration—have a significant positive relationship with HR effectiveness (p < .01). Reliability scores for all constructs exceeded 0.70, confirming internal consistency. Among the variables, digital integration recorded the highest mean score (4.10), reflecting Gen Z’s strong preference for technology-enabled HR systems. However, regression analysis revealed that workplace flexibility (β = .38) is the strongest predictor of HR effectiveness, followed by mental health support (β = .34) and digital integration (β = .29). The model explains 52% of the variance in HR effectiveness (R2 = .52), indicating substantial explanatory power.
+
+The study concludes that organizations must redesign HR strategies to align with Gen Z expectations by implementing flexible work arrangements, strengthening mental health initiatives, and adopting advanced digital HR systems. These practices are essential for enhancing employee engagement, satisfaction, and retention in the evolving workforce landscape.`,
     keywords: ['Generation Z', 'Human Resource Management', 'Workplace Flexibility', 'Mental Health Support', 'Digital Integration'],
     category: 'Human Resources & Management',
     publishedDate: 'March 2026',
@@ -289,17 +302,21 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-004',
     articleNumber: 4,
-    title: 'Contemporary Perspectives in Multidisciplinary Research: Emerging Trends and Empirical Insights',
-    authors: ['Contributing Scholars', 'SRCAA Research Group'],
+    title: "A Comprehensive Study on Technological Advancements in India's Financial Sector",
+    authors: ['RITHIKA S', 'Dr. SANTOSH NELAMAKANAHALLI CHIKKAMARI'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '43–56',
-    driveLink: 'https://drive.google.com/file/d/1bp6TERon_h7ATH1VwaQip0IGFrnFnWTF/view?usp=sharing',
+    driveLink: 'https://drive.google.com/',
     doi: '10.xxxx/sgrcr.2026.01.004',
-    abstract: 'An in-depth inquiry addressing contemporary methodological advancements, strategic frameworks, and empirical evaluation across modern multidisciplinary domains.',
-    keywords: ['Multidisciplinary Research', 'Empirical Methods', 'Contemporary Trends', 'Academic Inquiry'],
-    category: 'Commerce & Management',
+    abstract: `Technology has played a critical role in the development of the Indian banking industry, which has undergone significant changes over time. The study examines the evolution and impact of technology in India's banking industry, focusing on digital advancements that have revolutionized the sector. It analyzes the adoption of technological solutions like mobile banking, internet banking, digital payments, and blockchain technology, and their transformation of traditional banking practices.
+
+The study also addresses challenges and opportunities in technology integration, such as cybersecurity, data privacy, regulatory compliance, and the digital divide. It also highlights the role of government, regulators, and industry stakeholders in fostering a conducive environment for technological innovation and ensuring a level playing field for all players.
+
+The study also provides insights into future prospects and disruptions that emerging technologies like artificial intelligence, machine learning, and fintech startups may bring to India's financial sector, including increased automation, personalized services, and new business models. Overall, the study offers a comprehensive analysis of how technology has transformed India's financial sector, its current state, challenges, and future outlook, and offers recommendations for policymakers and banking stakeholders.`,
+    keywords: ['Indian Banking Industry', 'Digital Payments', 'Mobile Banking', 'Fintech Disruptions', 'Cybersecurity & Regulation'],
+    category: 'Banking & Financial Technology',
     publishedDate: 'March 2026',
     downloads: 310,
     views: 980,
@@ -307,17 +324,21 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-005',
     articleNumber: 5,
-    title: 'Sustainable Economic Strategies and Corporate Governance in Developing Economies',
-    authors: ['Contributing Scholars', 'SRCAA Research Group'],
+    title: "A Comprehensive Study on Technological Advancements in India's Financial Sector",
+    authors: ['MR. SACHIN GOWDA K S'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '57–70',
-    driveLink: 'https://drive.google.com/file/d/1p2DhGS_vxFEEGA2mZysCZYGfqO4lNUvw/view?usp=sharing',
+    driveLink: 'https://drive.google.com/',
     doi: '10.xxxx/sgrcr.2026.01.005',
-    abstract: 'Investigating corporate sustainability benchmarks, regulatory governance models, and economic stewardship across fast-evolving regional markets.',
-    keywords: ['Corporate Governance', 'Economic Sustainability', 'Developing Economies', 'Policy Frameworks'],
-    category: 'Social Sciences',
+    abstract: `This study investigates the connection between ancient trade wisdom and modern entrepreneurship, focusing specifically on the practices of traditional guilds (Shrenis) and family-run businesses. In historical trade systems, ethical conduct, collective decision-making, and knowledge transfer across generations were central to sustaining economic activity and building strong community networks. Such practices not only ensured financial stability but also reinforced social cohesion and trust, highlighting lessons that remain relevant for contemporary business environments.
+
+The research further explores how the organizational structures of guilds resemble modern family enterprises. Both systems rely heavily on trust, succession planning, mentorship, and collaborative networks to thrive. By examining these parallels, the study demonstrates how age-old practices can inform effective leadership, strategic decision-making, and long-term sustainability in today’s entrepreneurial landscape.
+
+Finally, this comparative analysis provides practical insights for entrepreneurs seeking to integrate traditional wisdom with modern business strategies. By combining historical perspectives with contemporary practices, the study emphasizes the value of ethical, community-oriented, and resilient approaches in building successful and sustainable ventures in a competitive global market.`,
+    keywords: ['Traditional Guilds (Shrenis)', 'Family Businesses', 'Ancient Trade Wisdom', 'Business Ethics', 'Succession Planning'],
+    category: 'Commerce & Entrepreneurship',
     publishedDate: 'March 2026',
     downloads: 290,
     views: 920,
@@ -325,17 +346,21 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-006',
     articleNumber: 6,
-    title: 'Transformative Technology and Digital Ethics in Higher Education and Modern Industry',
-    authors: ['Contributing Scholars', 'SRCAA Research Group'],
+    title: 'A Study on the Impact of Fintech on Inclusive Finance: A Focus on the Banking Industry',
+    authors: ['MR. SACHIN GOWDA K S'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '71–84',
-    driveLink: 'https://drive.google.com/file/d/1SKmekn2uRJR3_mugTXfl7GEBhFUrNUgw/view?usp=sharing',
+    driveLink: 'https://drive.google.com/',
     doi: '10.xxxx/sgrcr.2026.01.006',
-    abstract: 'A comprehensive study on the ethical implications of digital transformation, adaptive learning technologies, and human-centric technology deployment.',
-    keywords: ['Digital Ethics', 'Higher Education', 'Technological Transformation', 'Innovation Systems'],
-    category: 'Science & Technology',
+    abstract: `This study investigates the impact of fintech on inclusive finance, with a focus on the banking industry. It seeks to comprehend how fintech-driven inclusive finance affects bank profitability and what this means for global financial inclusion. The research will examine current literature, empirical evidence, and data from developing nations to shed light on the relationship between fintech, the banking industry, and inclusive finance.
+
+Fintech is revolutionizing financial services by harnessing technology and cloud-based data to provide products that are more personalized to the needs of consumers at a lower cost. The ability of fintech to increase financial inclusion and help underserved groups is well acknowledged. It will also talk about the consequences of fintech for financial inclusion and sustainability, such as the challenges it brings to financial systems and the need for regulatory measures.
+
+Fintech's cost-effectiveness has reduced the financial exclusion gap, making financial services more accessible for a wider population. The study will add to the existing body of knowledge on fintech and inclusive finance by giving insights into the complicated interplay between technology, the banking system, and financial inclusion. However, the paper also addresses regulatory challenges, emphasizing the need to balance fostering Fintech innovation with safeguarding consumer interests. The findings have significant implications for financial institutions, policymakers, and stakeholders, emphasizing the need to adapt to this dynamic financial landscape for a more inclusive and equitable financial system.`,
+    keywords: ['Fintech', 'Financial Inclusion', 'Banking Profitability', 'Cloud-Based Financial Services', 'Financial Regulation'],
+    category: 'Banking & Financial Services',
     publishedDate: 'March 2026',
     downloads: 340,
     views: 1050,
@@ -343,17 +368,21 @@ export const ARTICLES: Article[] = [
   {
     id: 'article-007',
     articleNumber: 7,
-    title: 'WORKFORCE SKILLS FOR BUSINESS 2030: NAVIGATING THE FUTURE OF WORK IN AN AI-AUGMENTED ECONOMY',
-    authors: ['GEETHA R', ''],
+    title: 'Workforce Skills for Business 2030: Navigating the Future of Work in an AI-Augmented Economy',
+    authors: ['GEETHA R'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '85–98',
-    driveLink: 'https://drive.google.com/file/d/1QPbWBPh8dP5wAgHs-ufr-MYox6-rTw2l/view?usp=sharing',
+    driveLink: 'https://drive.google.com/',
     doi: '10.xxxx/sgrcr.2026.01.007',
-    abstract: 'Examining cross-disciplinary synergies between legal jurisdictions, social policy development, and community impact indicators in the modern era.',
-    keywords: ['Legal Frameworks', 'Social Policy', 'Interdisciplinary Studies', 'Societal Progress'],
-    category: 'Law & Governance',
+    abstract: `The accelerating convergence of Artificial Intelligence, automation, and digital transformation is fundamentally reshaping the skills landscape for the global business workforce. This paper investigates the critical workforce skills that will define organisational competitiveness by 2030, with a focus on Indian businesses in a digitally transforming economy. A sequential exploratory mixed-methods design is employed: first, a three-round Delphi methodology with a panel of 42 industry experts across seven sectors, followed by a quantitative survey of 278 HR professionals and business leaders.
+
+The findings yield a validated Future Skills Taxonomy for Business 2030 comprising four clusters — Digital & Technological Literacy, Cognitive & Analytical Agility, Human-Centred Leadership, and Adaptive Collaboration. Three hypotheses are tested through multiple regression analysis: learning culture (β = 0.44), leadership commitment (β = 0.38), and L&D budget allocation (β = 0.29) are the strongest predictors of reskilling programme effectiveness (R2 = 0.613).
+
+A critical finding is that 79.3% of organisations acknowledge the urgency of future-skills development, yet only 34.7% have implemented systematic reskilling programmes. The paper proposes a Dynamic Workforce Capability Framework (DWCF) that integrates individual development, organisational learning, and national policy enablement.`,
+    keywords: ['Future Skills 2030', 'AI & Automation', 'Workforce Capabilities', 'Reskilling Programs', 'Learning & Development'],
+    category: 'Human Resources & Organizational Strategy',
     publishedDate: 'March 2026',
     downloads: 275,
     views: 890,
@@ -362,17 +391,18 @@ export const ARTICLES: Article[] = [
     id: 'article-008',
     articleNumber: 8,
     title: 'Artificial Intelligence in Education: An Empirical Analysis of Its Influence on Students’ Engagement',
-    authors: ['SRIDEVI M', ''],
+    authors: ['SRIDEVI M'],
     volume: 1,
     issue: 1,
     year: 2026,
     pages: '99–112',
-    driveLink: 'https://drive.google.com/file/d/1hpRloUC9zikzBP3brFJa-ZeXEY2BcmBZ/view?usp=sharing',
+    driveLink: 'https://drive.google.com/',
     doi: '10.xxxx/sgrcr.2026.01.008',
-    abstract: 'The integration of artificial intelligence (AI)in education has transformed traditional learning environments by enhancing accessibility, personalization, and efficiency. This study aims to empirically analyze the influence of AI on students’ engagement and learning outcomes in Bengaluru. Using primary data collected from students through a structured questionnaire, the study evaluates how AI-based tools impact academic interaction, participation, and
-    performance. The findings indicate that AI significantly enhances student engagement and improves learning outcomes, although certain challenges such as overdependence and reduced critical thinking were observed. The study contributes to understanding the role of in shaping modern educational practices.',
-    keywords: ['Strategic Leadership', 'Organisational Behaviour', 'Digital Ecosystems', 'Workplace Innovation'],
-    category: 'Commerce & Management',
+    abstract: `The integration of artificial intelligence (AI) in education has transformed traditional learning environments by enhancing accessibility, personalization, and efficiency. This study aims to empirically analyze the influence of AI on students’ engagement and learning outcomes in Bengaluru.
+
+Using primary data collected from students through a structured questionnaire, the study evaluates how AI-based tools impact academic interaction, participation, and performance. The findings indicate that AI significantly enhances student engagement and improves learning outcomes, although certain challenges such as overdependence and reduced critical thinking were observed. The study contributes to understanding the role of AI in shaping modern educational practices.`,
+    keywords: ['Artificial Intelligence in Education', 'Student Engagement', 'Learning Outcomes', 'Educational Technology', 'Bengaluru Higher Education'],
+    category: 'Education & Technology',
     publishedDate: 'March 2026',
     downloads: 320,
     views: 1010,
