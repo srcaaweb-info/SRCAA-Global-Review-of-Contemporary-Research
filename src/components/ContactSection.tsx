@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   Mail, 
   MapPin, 
+  Building2,
   Phone, 
   Send, 
   CheckCircle2, 
@@ -175,15 +176,14 @@ Forwarded directly to: ${RECIPIENT_GMAIL}`;
           <div className="space-y-6">
             <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
               <h3 className="font-serif font-bold text-xl text-[#2f1d16]">
-                Registered Editorial Office
+                Editorial Secretariat & Operations
               </h3>
               
               <div className="flex items-start gap-3.5 text-sm text-[#513326]">
-                <MapPin className="w-5 h-5 text-[#8a5a41] shrink-0 mt-0.5" />
+                <Building2 className="w-5 h-5 text-[#8a5a41] shrink-0 mt-0.5" />
                 <div>
                   <strong className="block text-[#2f1d16]">Shakti Research Centre and Academia (SRCAA)</strong>
                   <p className="text-xs sm:text-sm text-[#684f43] mt-0.5">
-                    Yelahanka / Bengaluru, Karnataka, India.<br />
                     Accredited under International Trade Council (ITC) Framework.
                   </p>
                 </div>
