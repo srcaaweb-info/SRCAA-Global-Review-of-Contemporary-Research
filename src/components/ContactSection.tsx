@@ -1,456 +1,218 @@
 import React, { useState } from 'react';
 import { 
   Mail, 
+  Building2, 
   MapPin, 
-  Building2,
-  Phone, 
-  Send, 
-  CheckCircle2, 
-  MessageSquare,
-  Copy,
-  Check,
-  ExternalLink,
-  AlertCircle,
-  Info
+  Copy, 
+  Check, 
+  ExternalLink, 
+  Clock, 
+  ShieldCheck, 
+  Globe2, 
+  FileText,
+  Send
 } from 'lucide-react';
-import { 
-  saveEditorialInquiry, 
-  getGoogleFormEndpoint, 
-  pushToGoogleEndpoint 
-} from '../utils/submissionStorage';
 
-const RECIPIENT_GMAIL = 'srcaaweb@gmail.com';
+const CONTACT_EMAILS = [
+  {
+    id: 'editorial',
+    title: 'Primary Editorial & Manuscript Inquiries',
+    email: 'srcaacontact@gmail.com',
+    description: 'For manuscript submissions, peer review follow-ups, author guidelines questions, revision tracking, and general editorial inquiries.',
+    badge: 'Editorial Desk',
+    primary: true,
+  },
+  {
+    id: 'admin',
+    title: 'Administrative & Institutional Secretariat',
+    email: 'admin@srcaa.co.in',
+    description: 'For institutional affiliations, publisher partnerships, licensing, accreditation, copyright verification, and administrative communications.',
+    badge: 'Administration',
+    primary: false,
+  },
+];
 
 export const ContactSection: React.FC = () => {
-  const [inquiryStatus, setInquiryStatus] = useState<'idle' | 'submitting' | 'sent'>('idle');
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [copiedSummary, setCopiedSummary] = useState(false);
-  const [submittedSnapshot, setSubmittedSnapshot] = useState<{
-    name: string;
-    email: string;
-    subject: string;
-    message: string;
-    timestamp: string;
-  } | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
 
-  const [inquiryData, setInquiryData] = useState({
-    name: '',
-    email: '',
-    subject: 'General Editorial Inquiry',
-    message: '',
-  });
-
-  const generateEmailBody = (data: typeof inquiryData) => {
-    return `Dear Editorial Secretariat (${RECIPIENT_GMAIL}),
-
-A new inquiry has been submitted via the SGRCR portal:
-
-========================================
-EDITORIAL INQUIRY DETAILS
-========================================
-- Sender Name: ${data.name}
-- Sender Email: ${data.email}
-- Inquiry Subject: ${data.subject}
-- Date: ${new Date().toLocaleString()}
-
-MESSAGE:
-${data.message}
-========================================
-
-Forwarded directly to: ${RECIPIENT_GMAIL}`;
-  };
-
-  const handleInquirySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inquiryData.name.trim() || !inquiryData.email.trim() || !inquiryData.message.trim()) {
-      setValidationError('Please complete all required fields.');
-      return;
-    }
-
-    setInquiryStatus('submitting');
-    setValidationError(null);
-
-    const snapshot = {
-      ...inquiryData,
-      timestamp: new Date().toLocaleString(),
-    };
-
-    // 1. Permanently save inquiry locally
-    const savedRecord = saveEditorialInquiry({
-      name: inquiryData.name,
-      email: inquiryData.email,
-      subject: inquiryData.subject,
-      message: inquiryData.message,
-      timestamp: snapshot.timestamp,
-      forwardStatus: 'forwarded',
-    });
-
-    try {
-      // 2. Forward to recipient gmail using formsubmit.co AJAX API
-      await fetch(`https://formsubmit.co/ajax/${RECIPIENT_GMAIL}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          _subject: `[SGRCR Editorial Inquiry] ${inquiryData.subject} - from ${inquiryData.name}`,
-          _captcha: 'false',
-          _template: 'table',
-          _replyto: inquiryData.email,
-          "Sender Name": inquiryData.name,
-          "Sender Email": inquiryData.email,
-          "Inquiry Topic": inquiryData.subject,
-          "Message": inquiryData.message,
-          "Forwarded To": RECIPIENT_GMAIL,
-          "Timestamp": snapshot.timestamp,
-        }),
-      });
-    } catch (err) {
-      console.warn('Inquiry forward network request completed:', err);
-    }
-
-    // 3. Push to Google Form / Sheets API if configured
-    const googleEndpoint = getGoogleFormEndpoint();
-    if (googleEndpoint) {
-      pushToGoogleEndpoint(googleEndpoint, {
-        submissionId: savedRecord.id,
-        authorName: inquiryData.name,
-        email: inquiryData.email,
-        affiliation: 'Editorial Office Inquiry',
-        articleType: 'Inquiry',
-        title: inquiryData.subject,
-        message: inquiryData.message,
-        timestamp: snapshot.timestamp,
-        fileData: null,
-      }).catch(console.warn);
-    }
-
-    setSubmittedSnapshot(snapshot);
-    setInquiryStatus('sent');
-  };
-
-  const handleCopySummary = () => {
-    if (!submittedSnapshot) return;
-    const text = generateEmailBody(submittedSnapshot);
-    navigator.clipboard.writeText(text);
-    setCopiedSummary(true);
-    setTimeout(() => setCopiedSummary(false), 2500);
-  };
-
-  const getGmailWebLink = () => {
-    if (!submittedSnapshot) return '#';
-    const subject = `[SGRCR Editorial Inquiry] ${submittedSnapshot.subject} - ${submittedSnapshot.name}`;
-    const body = generateEmailBody(submittedSnapshot);
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
-  const getMailtoLink = () => {
-    if (!submittedSnapshot) return '#';
-    const subject = `[SGRCR Editorial Inquiry] ${submittedSnapshot.subject} - ${submittedSnapshot.name}`;
-    const body = generateEmailBody(submittedSnapshot);
-    return `mailto:${RECIPIENT_GMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const handleCopy = (email: string) => {
+    navigator.clipboard.writeText(email);
+    setCopiedEmail(email);
+    setTimeout(() => {
+      setCopiedEmail(null);
+    }, 2500);
   };
 
   return (
-    <section id="editorial-office" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-[#fffdf9] border-b border-[#dfc7b2]">
+    <section id="contact" className="py-16 sm:py-24 bg-[#fffdf9] border-t border-[#dfc7b2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="mb-8 sm:mb-12">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f1e1d1] text-[#8a5a41] text-xs font-bold uppercase tracking-widest">
-            <Mail className="w-3.5 h-3.5" />
-            Direct Communication
+        <div className="max-w-3xl mb-12">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#8a5a41] bg-[#f1e1d1] px-3 py-1 rounded-full">
+            Contact Secretariat
           </span>
-          <h2 className="font-serif font-bold text-2xl sm:text-3xl md:text-4xl text-[#2f1d16] mt-3">
-            Editorial Office & Correspondence
+          <h2 className="font-serif font-bold text-3xl sm:text-4xl text-[#2f1d16] mt-3 mb-4">
+            Editorial Secretariat & Official Contacts
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-[#684f43] max-w-2xl">
-            Get in touch with the Managing Editor, Editorial Assistant, and Academic Secretariat for inquiries regarding manuscript status, special issues, or institutional affiliations.
+          <p className="text-[#684f43] text-base sm:text-lg leading-relaxed">
+            Connect directly with the editorial office and administrative secretariat of the 
+            <strong> SRCAA Global Review of Contemporary Research (SGRCR)</strong>.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
-          
-          {/* Office & Details Info */}
-          <div className="space-y-6">
-            <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
-              <h3 className="font-serif font-bold text-xl text-[#2f1d16]">
-                Editorial Secretariat & Operations
-              </h3>
-              
-              <div className="flex items-start gap-3.5 text-sm text-[#513326]">
-                <Building2 className="w-5 h-5 text-[#8a5a41] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-[#2f1d16]">Shakti Research Centre and Academia (SRCAA)</strong>
-                  <p className="text-xs sm:text-sm text-[#684f43] mt-0.5">
-                    Accredited under International Trade Council (ITC) Framework.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 text-sm text-[#513326] pt-3 border-t border-[#dfc7b2]">
-                <Mail className="w-5 h-5 text-[#8a5a41] shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <strong className="block text-[#2f1d16]">Official Email Communications</strong>
-                  <p className="text-xs text-[#684f43]">
-                    Editorial Secretariat & Direct Forwarding:{' '}
-                    <a href={`mailto:${RECIPIENT_GMAIL}`} className="text-[#8a5a41] font-bold hover:underline">
-                      {RECIPIENT_GMAIL}
-                    </a>
-                  </p>
-                  <p className="text-xs text-[#684f43]">
-                    Institutional Inquiries & Administration:{' '}
-                    <a href="mailto:admin@srcaa.co.in" className="text-[#8a5a41] font-bold hover:underline">
-                      admin@srcaa.co.in
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3.5 text-sm text-[#513326] pt-3 border-t border-[#dfc7b2]">
-                <Phone className="w-5 h-5 text-[#8a5a41] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block text-[#2f1d16]">Editorial Desk Working Hours</strong>
-                  <p className="text-xs text-[#684f43] mt-0.5">
-                    Monday to Friday: 09:30 AM – 05:30 PM (IST)<br />
-                    Response time: Within 24–48 working hours.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Action Button */}
-            <div className="p-6 bg-[#2f1d16] text-[#fffaf4] rounded-2xl flex items-center justify-between gap-4">
+        {/* Primary Contact Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {CONTACT_EMAILS.map((item) => (
+            <div 
+              key={item.id}
+              className={`rounded-2xl p-7 sm:p-9 border transition-all shadow-xs flex flex-col justify-between ${
+                item.primary 
+                  ? 'bg-[#fffaf4] border-[#8a5a41]/40 ring-1 ring-[#8a5a41]/20' 
+                  : 'bg-[#fffdf9] border-[#dfc7b2]'
+              }`}
+            >
               <div>
-                <p className="font-serif font-bold text-base text-[#e6bd94]">
-                  Direct Email to Editorial Secretariat
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <span className="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-[#f1e1d1] text-[#513326]">
+                    {item.badge}
+                  </span>
+                  <Mail className="w-5 h-5 text-[#8a5a41]" />
+                </div>
+
+                <h3 className="font-serif font-bold text-xl sm:text-2xl text-[#2f1d16] mb-3">
+                  {item.title}
+                </h3>
+
+                <p className="text-sm text-[#684f43] leading-relaxed mb-6">
+                  {item.description}
                 </p>
-                <p className="text-xs text-[#dfc7b2] mt-0.5">
-                  Launch email pre-addressed to {RECIPIENT_GMAIL}
-                </p>
-              </div>
-              <a
-                href={`mailto:${RECIPIENT_GMAIL}?subject=Editorial%20Inquiry%20-%20SGRCR`}
-                className="shrink-0 px-4 py-2.5 bg-[#c69470] hover:bg-[#d9a985] text-[#2f1d16] font-bold text-xs rounded-xl shadow-xs transition-colors"
-              >
-                Send Email
-              </a>
-            </div>
-          </div>
 
-          {/* Quick Inquiry Form */}
-          <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 sm:p-8 shadow-xs">
-            <h3 className="font-serif font-bold text-xl text-[#2f1d16] mb-2 flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-[#8a5a41]" />
-              Send an Editorial Inquiry
-            </h3>
-            <p className="text-xs text-[#684f43] mb-6">
-              Have a question regarding submission formats, reviewer invitations, or copyright permissions? Inquiries are delivered directly to <span className="font-bold text-[#8a5a41]">{RECIPIENT_GMAIL}</span>.
-            </p>
-
-            {validationError && (
-              <div className="mb-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>{validationError}</span>
-              </div>
-            )}
-
-            {inquiryStatus === 'sent' && submittedSnapshot ? (
-              <div className="p-6 bg-[#fdfcf7] border-2 border-emerald-500/40 rounded-2xl text-[#2f1d16] space-y-4">
-                <div className="flex items-center gap-3 pb-3 border-b border-[#dfc7b2]">
-                  <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5" />
+                {/* Email Display Box */}
+                <div className="p-4 bg-[#fffdf9] border border-[#dfc7b2] rounded-xl flex items-center justify-between gap-3 mb-6">
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <Mail className="w-4 h-4 text-[#8a5a41] shrink-0" />
+                    <a 
+                      href={`mailto:${item.email}`}
+                      className="font-mono font-bold text-sm sm:text-base text-[#2f1d16] hover:text-[#8a5a41] hover:underline truncate"
+                      title={`Send email to ${item.email}`}
+                    >
+                      {item.email}
+                    </a>
                   </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-base sm:text-lg text-[#2f1d16]">
-                      Inquiry Forwarded to Editorial Office
-                    </h4>
-                    <p className="text-xs text-[#684f43]">
-                      Transmitted to <strong className="text-emerald-800">{RECIPIENT_GMAIL}</strong>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-xl p-3.5 space-y-2 text-xs text-[#513326]">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">From</span>
-                    <strong>{submittedSnapshot.name}</strong> ({submittedSnapshot.email})
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">Subject</span>
-                    <p className="font-semibold text-[#2f1d16]">{submittedSnapshot.subject}</p>
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-[#8a5a41] block">Message</span>
-                    <p className="text-xs text-[#684f43] bg-[#fffdf9] p-2 rounded-md border border-[#dfc7b2] whitespace-pre-wrap">
-                      {submittedSnapshot.message}
-                    </p>
-                  </div>
-                </div>
-
-                {/* One-time FormSubmit Activation Notice */}
-                <div className="p-3 bg-amber-50/90 border border-amber-300 rounded-xl space-y-1 text-xs text-amber-900">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-950">
-                    <Info className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                    <span>Email Delivery Notice</span>
-                  </div>
-                  <p className="text-amber-800 text-[11px] leading-relaxed">
-                    Message was dispatched to <strong>{RECIPIENT_GMAIL}</strong>. If this is your first time using FormSubmit for {RECIPIENT_GMAIL}, please check your Gmail (Inbox/Spam) for an email from FormSubmit titled <em>"Action Required: Activate your form"</em> and click <strong>Activate Form</strong>.
-                  </p>
-                  <p className="text-amber-900 font-semibold text-[11px]">
-                    💡 Or click <strong>"Push via Gmail Now"</strong> below to send immediately with zero delay!
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <a
-                    href={getGmailWebLink()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs rounded-lg transition-all shadow-sm"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Push via Gmail Now</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-
-                  <a
-                    href={getMailtoLink()}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs rounded-lg transition-all"
-                  >
-                    <Send className="w-3.5 h-3.5 text-[#c69470]" />
-                    <span>Open in Email App</span>
-                  </a>
-
                   <button
                     type="button"
-                    onClick={handleCopySummary}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#fdf6ee] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-semibold text-xs rounded-lg transition-all"
+                    onClick={() => handleCopy(item.email)}
+                    className="shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#f1e1d1] hover:bg-[#e6bd94] text-[#513326] transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    title="Copy email to clipboard"
                   >
-                    {copiedSummary ? (
+                    {copiedEmail === item.email ? (
                       <>
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Copied!</span>
+                        <Check className="w-3.5 h-3.5 text-emerald-700" />
+                        <span className="text-emerald-700 font-bold">Copied</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5 text-[#8a5a41]" />
-                        <span>Copy Message</span>
+                        <span>Copy</span>
                       </>
                     )}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInquiryStatus('idle');
-                      setSubmittedSnapshot(null);
-                      setInquiryData({ name: '', email: '', subject: 'General Editorial Inquiry', message: '' });
-                    }}
-                    className="text-xs text-[#8a5a41] hover:text-[#2f1d16] font-bold underline px-2 py-1 ml-auto"
-                  >
-                    Send Another Inquiry
-                  </button>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleInquirySubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#513326] mb-1">
-                    Your Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={inquiryData.name}
-                    onChange={(e) => {
-                      setValidationError(null);
-                      setInquiryData({ ...inquiryData, name: e.target.value });
-                    }}
-                    placeholder="Prof. / Dr. / Researcher Name"
-                    className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#513326] mb-1">
-                    Your Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={inquiryData.email}
-                    onChange={(e) => {
-                      setValidationError(null);
-                      setInquiryData({ ...inquiryData, email: e.target.value });
-                    }}
-                    placeholder="email@institution.edu"
-                    className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
-                  />
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-[#dfc7b2]">
+                <a
+                  href={`mailto:${item.email}?subject=Inquiry%20to%20SGRCR%20Secretariat`}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#2f1d16] hover:bg-[#513326] text-[#fffaf4] font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-colors"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send Email</span>
+                </a>
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.email)}&su=Inquiry%20to%20SGRCR%20Secretariat`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#fffaf4] hover:bg-[#f1e1d1] border border-[#dfc7b2] text-[#513326] font-semibold text-xs sm:text-sm rounded-xl transition-colors"
+                >
+                  <span>Open in Gmail</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-[#8a5a41]" />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#513326] mb-1">
-                    Inquiry Topic
-                  </label>
-                  <select
-                    value={inquiryData.subject}
-                    onChange={(e) => setInquiryData({ ...inquiryData, subject: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
-                  >
-                    <option>General Editorial Inquiry</option>
-                    <option>Manuscript Status Follow-up</option>
-                    <option>Reviewer Application</option>
-                    <option>Special Issue Proposal</option>
-                    <option>Copyright & Licensing Request</option>
-                  </select>
-                </div>
+        {/* Institutional Secretariat & Guidelines Information */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Institution Affiliation */}
+          <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#f1e1d1] flex items-center justify-center text-[#8a5a41] mb-4">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <h4 className="font-serif font-bold text-base text-[#2f1d16] mb-1">
+              Publishing Institution
+            </h4>
+            <p className="text-xs text-[#513326] font-semibold">
+              Shakti Research Centre and Academia (SRCAA)
+            </p>
+            <p className="text-xs text-[#684f43] mt-1.5 leading-relaxed">
+              Academic research consortium operating under international academic standards and institutional frameworks.
+            </p>
+            <a 
+              href="https://www.srcaa.co.in/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8a5a41] hover:underline mt-3"
+            >
+              <span>Visit Official SRCAA Website</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#513326] mb-1">
-                    Message Details *
-                  </label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={inquiryData.message}
-                    onChange={(e) => {
-                      setValidationError(null);
-                      setInquiryData({ ...inquiryData, message: e.target.value });
-                    }}
-                    placeholder="Type your message or inquiry here..."
-                    className="w-full px-3.5 py-2.5 bg-[#fffdf9] border border-[#dfc7b2] rounded-lg text-sm text-[#2f1d16] focus:ring-2 focus:ring-[#8a5a41] focus:outline-hidden"
-                  />
-                </div>
+          {/* Working Hours & Response Times */}
+          <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#f1e1d1] flex items-center justify-center text-[#8a5a41] mb-4">
+              <Clock className="w-5 h-5" />
+            </div>
+            <h4 className="font-serif font-bold text-base text-[#2f1d16] mb-1">
+              Desk Working Hours
+            </h4>
+            <p className="text-xs text-[#513326] font-semibold">
+              Monday – Friday: 09:30 AM – 05:30 PM (IST)
+            </p>
+            <p className="text-xs text-[#684f43] mt-1.5 leading-relaxed">
+              Inquiries, submissions, and editorial correspondence are typically acknowledged within <strong>24 to 48 working hours</strong>.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-1 text-xs text-[#8a5a41] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Prompt Peer-Review Assistance</span>
+            </div>
+          </div>
 
-                <div className="space-y-2.5">
-                  <button
-                    type="submit"
-                    disabled={inquiryStatus === 'submitting'}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 bg-[#2f1d16] hover:bg-[#513326] disabled:opacity-50 text-[#fffaf4] font-bold text-sm rounded-xl shadow-xs transition-colors"
-                  >
-                    <Send className="w-4 h-4 text-[#c69470]" />
-                    <span>{inquiryStatus === 'submitting' ? 'Forwarding to srcaaweb@gmail.com...' : 'Send Message to Editorial Office'}</span>
-                  </button>
-
-                  <a
-                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(RECIPIENT_GMAIL)}&su=${encodeURIComponent(`[SGRCR Inquiry] ${inquiryData.subject || 'Editorial Inquiry'}`)}&body=${encodeURIComponent(generateEmailBody(inquiryData))}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 bg-[#c69470] hover:bg-[#b58360] text-[#2f1d16] font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <span>Dispatch via Gmail Directly</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-
-                <p className="text-[11px] text-center text-[#684f43]">
-                  Submissions are transmitted directly to <strong className="text-[#2f1d16]">{RECIPIENT_GMAIL}</strong>
-                </p>
-              </form>
-            )}
+          {/* Submissions & Peer Review Help */}
+          <div className="bg-[#fffaf4] border border-[#dfc7b2] rounded-2xl p-6 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#f1e1d1] flex items-center justify-center text-[#8a5a41] mb-4">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h4 className="font-serif font-bold text-base text-[#2f1d16] mb-1">
+              Manuscript Submissions
+            </h4>
+            <p className="text-xs text-[#513326] font-semibold">
+              Double-Blind Peer Review
+            </p>
+            <p className="text-xs text-[#684f43] mt-1.5 leading-relaxed">
+              Authors may submit papers directly via our online portal or email their manuscripts in Word/PDF format to <a href="mailto:srcaacontact@gmail.com" className="text-[#8a5a41] font-bold hover:underline">srcaacontact@gmail.com</a>.
+            </p>
+            <a 
+              href="#submit-manuscript" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8a5a41] hover:underline mt-3"
+            >
+              <span>Submit Manuscript Online</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
 
         </div>
