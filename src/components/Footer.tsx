@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Mail, ArrowUp, ExternalLink, Archive, Inbox } from 'lucide-react';
+import { BookOpen, ShieldCheck, Mail, ArrowUp, ExternalLink, Archive } from 'lucide-react';
 
 interface FooterProps {
   onOpenSubmissionsLog?: () => void;
@@ -91,6 +91,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
                   <ExternalLink className="w-3 h-3 text-[#c69470]" />
                 </a>
               </li>
+              <li>
+                <a 
+                  href="https://www.srcaa.co.in/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#c69470] hover:text-[#fffaf4] transition-colors inline-flex items-center gap-1 font-semibold"
+                >
+                  <span>SRCAA Official Website (srcaa.co.in)</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -158,23 +169,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSubmissionsLog }) => {
                 </a>
               </p>
 
-              {onOpenSubmissionsLog && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={onOpenSubmissionsLog}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2f1d16] hover:bg-[#513326] text-[#e6bd94] border border-[#8a5a41] rounded-lg text-xs font-bold transition-colors"
-                  >
-                    <Inbox className="w-3.5 h-3.5 text-[#c69470]" />
-                    <span>Editorial Submissions Log</span>
-                  </button>
-                </div>
-              )}
-
-              <div className="pt-2 border-t border-[#3d271e] text-[11px] text-[#dfc7b2]">
-                <p>Open Access: CC BY 4.0</p>
-                <p>DOAJ & Scopus Indexation Framework</p>
-                <p>Bengaluru Jurisdiction, India</p>
+              <div className="pt-3 border-t border-[#3d271e]">
+                <a
+                  href="https://www.srcaa.co.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#2f1d16] hover:bg-[#513326] text-[#e6bd94] hover:text-[#fffaf4] border border-[#8a5a41] rounded-lg text-xs font-bold transition-colors shadow-xs"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-[#c69470]" />
+                  <span>Visit SRCAA (srcaa.co.in)</span>
+                </a>
               </div>
             </div>
           </div>
