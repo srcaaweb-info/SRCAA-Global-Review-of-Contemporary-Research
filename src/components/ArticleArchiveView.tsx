@@ -304,7 +304,7 @@ export const ArticleArchiveView: React.FC<ArticleArchiveViewProps> = ({ onBackTo
                       <p className="font-bold text-xs uppercase tracking-wider text-[#8a5a41]">
                         Article Abstract:
                       </p>
-                      <p>{article.abstract}</p>
+                      <p className="whitespace-pre-line leading-relaxed">{article.abstract}</p>
                       <div className="pt-2 text-xs text-[#8a5a41] flex flex-wrap gap-4 font-semibold">
                         <span>DOI: {article.doi} (Crossref)</span>
                         <span>License: Open Access CC BY 4.0</span>
